@@ -1,18 +1,16 @@
 import 'dotenv/config';
 import express, { Request, Response, NextFunction } from 'express';
-import MaterialModel from './models/material';
+import morgan from 'morgan';
+import materialRoutes from './routes/materials';
 
 
 const app = express();
 
-app.get('/', async (req, res, next) => {
-  try {
-    const materials = await MaterialModel.find().exec();
-    res.status(200).json(materials);
-  } catch (error) {
-    next(error);
-  }
-});
+app.use(morgan('dev'));
+
+app.use(express.json());
+
+app.use('/api/materials', materialRoutes);
 
 app.use((req, res, next) => {
   next(Error('Endpoint not found'));
@@ -23,6 +21,6 @@ app.use((error: unknown, req: Request, res: Response, next: NextFunction) => {
   let errorMessage = 'An unknown error occurred';
   if(error instanceof Error) errorMessage = error.message;
   res.status(500).json({ error: errorMessage });
-})
+});
 
 export default app;
