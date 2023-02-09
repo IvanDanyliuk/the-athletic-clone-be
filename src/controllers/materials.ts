@@ -19,7 +19,11 @@ export const getMaterial: RequestHandler = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-};
+}
+
+interface CreateMaterialBody {
+  author: string
+}
 
 export const createMaterial: RequestHandler = async (req, res, next) => {
   const { author, title, text, image, views, likes, comments, labels } = req.body;
