@@ -45,29 +45,19 @@ export const getMaterial: RequestHandler = async (req, res, next) => {
 };
 
 export const createMaterial: RequestHandler<unknown, unknown, CreateMaterialBody, unknown> = async (req, res, next) => {
-  const { author, title, text, imageUrl, views, likes, comments, labels } = req.body;
+  const material = req.body;
   try {
-    if(!text) {
+    if(!material.text) {
       throw createHttpError(400, 'Material must have a text');
     }
-
-    const newMaterial = await MaterialModel.create({
-      author,
-      title,
-      text,
-      imageUrl,
-      views,
-      likes,
-      comments,
-      labels
-    });
+    const newMaterial = await MaterialModel.create(material);
     res.status(201).json(newMaterial);
   } catch (error) {
     next(error);
   }
 };
 
-interface UpdateNoteParams {
+interface UpdateMaterialParams {
   id: string,
 }
 
@@ -85,7 +75,7 @@ interface UpdateMaterialBody {
   labels: string[]
 }
 
-export const updateMaterial: RequestHandler<UpdateNoteParams, unknown, UpdateMaterialBody, unknown> = async (req, res, next) => {
+export const updateMaterial: RequestHandler<UpdateMaterialParams, unknown, UpdateMaterialBody, unknown> = async (req, res, next) => {
   const { id } = req.params;
   const materialToUpdate = req.body;
   
