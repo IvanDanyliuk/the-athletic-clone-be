@@ -6,6 +6,7 @@ import materialRoutes from './routes/materials';
 import clubRoutes from './routes/clubs';
 import competitionRoutes from './routes/competitions';
 import playerRoutes from './routes/players';
+import scheduleRoutes from './routes/schedules';
 
 
 const app = express();
@@ -18,6 +19,7 @@ app.use('/api/materials', materialRoutes);
 app.use('/api/clubs', clubRoutes);
 app.use('/api/competitions', competitionRoutes);
 app.use('/api/players', playerRoutes);
+app.use('/api/schedules', scheduleRoutes);
 
 app.use((req, res, next) => {
   next(createHttpError(404, 'Endpoint not found'));

@@ -12,6 +12,6 @@ const competitionSchema = new Schema({
   timestamps: true
 });
 
-type CompetitionType = InferSchemaType<typeof competitionSchema>;
+export type CompetitionType = InferSchemaType<typeof competitionSchema>;
 
 export default model<CompetitionType>('Competition', competitionSchema);

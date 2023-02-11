@@ -1,7 +1,7 @@
 import { RequestHandler } from 'express';
 import mongoose from 'mongoose';
 import createHttpError from 'http-errors';
-import PlayerModel from '../models/palyer';
+import PlayerModel from '../models/player';
 import { ClubType } from '../models/club';
 
 
