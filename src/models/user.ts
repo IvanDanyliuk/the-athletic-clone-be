@@ -9,6 +9,7 @@ const userSchema = new Schema({
   userPhotoUrl: { type: String },
   role: { type: String, required: true },
   location: { type: String },
+  organization: { type: String },
   position: { type: String }
 }, {
   timestamps: true

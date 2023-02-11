@@ -2,7 +2,13 @@ import { Schema, model, InferSchemaType } from 'mongoose';
 
 
 const materialSchema = new Schema({
-  author: { type: Schema.Types.ObjectId, ref: 'User' }, 
+  author: { 
+    firstName: { type: String, required: true },
+    lastName: { type: String, required: true },
+    photoUrl: { type: String },
+    organization: { type: String, required: true },
+    position: { type: String, required: true },
+   }, 
   title: { type: String },
   text: { type: String, required: true },
   image: { type: String },
