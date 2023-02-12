@@ -95,7 +95,7 @@ export const login: RequestHandler<unknown, unknown, LoginBody, unknown> = async
       throw(createHttpError(401, 'Invalid credentials'));
     }
 
-    const passwordMatch = await bcrypt.compare(password, password);
+    const passwordMatch = await bcrypt.compare(password, user.password);
 
     if(!passwordMatch) {
       throw(createHttpError(400, 'Passwords don\'t match'));
@@ -117,3 +117,72 @@ export const logout: RequestHandler = async (req, res, next) => {
     }
   });
 };
+
+export const getUsersByRole: RequestHandler = async (req, res, next) => {
+  const { role } = req.body;
+
+  try {
+    if(!role) {
+      throw(createHttpError(400, 'Provide a role'));
+    }
+    // if(role != 'author' || role != 'reader') {
+    //   throw(createHttpError(400, 'Role not exists'));
+    // }
+
+    const users = await UserModel.find({ role }).exec();
+    res.status(200).json(users);
+  } catch (error) {
+    next(error);
+  }
+};
+
+interface UpdateUserParams {
+  id: string,
+}
+
+interface UpdateUserBody {
+  firstName: string,
+  lastName: string,
+  email: string,
+  password: string,
+  userPhotoUrl?: string,
+  role: string,
+  location?: string,
+  organization?: string,
+  position?: string
+}
+
+export const updateUser: RequestHandler<UpdateUserParams, unknown, UpdateUserBody, unknown> = async (req, res, next) => {
+  const { id } = req.params;
+  const userToUpdate = req.body;
+
+  try {
+    if(!userToUpdate.firstName || !userToUpdate.lastName) {
+      throw(createHttpError(401, 'User must have first name and last name'));
+    }
+
+    if(!userToUpdate.email) {
+      throw(createHttpError(401, 'User must have an email'));
+    }
+
+    const updatedUser = await UserModel.findByIdAndUpdate(id, userToUpdate);
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteUser: RequestHandler = async (req, res, next) => {
+  const { id } = req.params;
+  const authenticatedUserId = req.session.userId;
+
+  try {
+    if(authenticatedUserId) {
+      req.session.destroy(error => error && next(error));
+    }
+    await UserModel.findByIdAndDelete(id);
+    res.sendStatus(204);
+  } catch (error) {
+    next(error);
+  }
+}

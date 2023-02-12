@@ -47,4 +47,4 @@ const scheduleSchema = new Schema({
 
 type ScheduleType = InferSchemaType<typeof scheduleSchema>;
 
-export default model<ScheduleType>('Schedule');
+export default model<ScheduleType>('Schedule', scheduleSchema);
