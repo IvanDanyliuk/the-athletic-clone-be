@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express, { Request, Response, NextFunction } from 'express';
 import createHttpError, { isHttpError } from 'http-errors';
 import morgan from 'morgan';
+import cors from 'cors';
 import session from 'express-session';
 import materialRoutes from './routes/materials';
 import MongoStore from 'connect-mongo';
@@ -14,6 +15,8 @@ import env from './util/validateEnv';
 
 
 const app = express();
+
+app.use(cors());
 
 app.use(morgan('dev'));
 
@@ -32,12 +35,12 @@ app.use(session({
   }),
 }));
 
-app.use('/api/materials', materialRoutes);
-app.use('/api/clubs', clubRoutes);
-app.use('/api/competitions', competitionRoutes);
-app.use('/api/players', playerRoutes);
-app.use('/api/schedules', scheduleRoutes);
-app.use('/api/users', userRoutes);
+app.use('/materials', materialRoutes);
+app.use('/clubs', clubRoutes);
+app.use('/competitions', competitionRoutes);
+app.use('/players', playerRoutes);
+app.use('/schedules', scheduleRoutes);
+app.use('/users', userRoutes);
 
 app.use((req, res, next) => {
   next(createHttpError(404, 'Endpoint not found'));

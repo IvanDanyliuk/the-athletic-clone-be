@@ -25,7 +25,7 @@ interface SignUpBody {
   email: string,
   password: string,
   userPhotoUrl?: string,
-  role: string,
+  role?: string,
   location?: string,
   organization?: string,
   position?: string
@@ -45,7 +45,7 @@ export const signUp: RequestHandler<unknown, unknown, SignUpBody, unknown> = asy
   } = req.body;
 
   try {
-    if(!firstName || !lastName || !email || !password || !role) {
+    if(!firstName || !lastName || !email || !password) {
       throw(createHttpError('Parameters missing'));
     }
 
@@ -55,19 +55,25 @@ export const signUp: RequestHandler<unknown, unknown, SignUpBody, unknown> = asy
       throw(createHttpError(409, 'User already exists. Provide another email address or log in instead.'));
     }
 
+    const userRoleValue = !role ? 'reader' : role;
+    const userPhotoUrlValue = !userPhotoUrl ? '' : userPhotoUrl;
+    const userLocationValue = !location ? '' : location;
+    const userOrganizationValue = !organization ? '' : organization;
+    const userPositionValue = !position ? '' : position;
+
     const passwordHashed = await bcrypt.hash(password, 10);
     const newUser = await UserModel.create({
       firstName,
       lastName,
       email, 
       password: passwordHashed,
-      role, 
-      userPhotoUrl, 
-      location, 
-      organization, 
-      position
+      role: userRoleValue, 
+      userPhotoUrl: userPhotoUrlValue, 
+      location: userLocationValue, 
+      organization: userOrganizationValue, 
+      position: userPositionValue
     });
-
+  
     req.session.userId = newUser._id;
 
     res.status(201).json(newUser);
