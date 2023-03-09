@@ -6,10 +6,16 @@ import { UserType } from '../models/user';
 
 
 interface CreateMaterialBody {
-  author: UserType,
+  author: { 
+    name: string,
+    photoUrl?: string,
+    organization: string,
+    position: string,
+  },
+  type: string,
   title?: string,
-  text: string,
-  imageUrl?: string,
+  content: string,
+  image?: string,
   views: number,
   likes: number,
   comments: {
@@ -46,8 +52,9 @@ export const getMaterial: RequestHandler = async (req, res, next) => {
 
 export const createMaterial: RequestHandler<unknown, unknown, CreateMaterialBody, unknown> = async (req, res, next) => {
   const material = req.body;
+  console.log(req.body)
   try {
-    if(!material.text) {
+    if(!material.content) {
       throw createHttpError(400, 'Material must have a text');
     }
     const newMaterial = await MaterialModel.create(material);
@@ -62,10 +69,16 @@ interface UpdateMaterialParams {
 }
 
 interface UpdateMaterialBody {
-  author: UserType,
+  author: { 
+    name: string,
+    photoUrl?: string,
+    organization: string,
+    position: string,
+  },
+  type: string,
   title?: string,
-  text: string,
-  imageUrl?: string,
+  content: string,
+  image?: string,
   views: number,
   likes: number,
   comments: {
@@ -84,7 +97,7 @@ export const updateMaterial: RequestHandler<UpdateMaterialParams, unknown, Updat
       throw(createHttpError(400, 'Invalid material id'));
     }
 
-    if(!materialToUpdate.text) {
+    if(!materialToUpdate.content) {
       throw createHttpError(400, 'Material must have a text');
     }
 
