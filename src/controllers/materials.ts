@@ -25,10 +25,23 @@ interface CreateMaterialBody {
   labels: string[]
 }
 
-export const getMaterials: RequestHandler = async (req, res, next) => {
+interface GetAllMaterialsQuery {
+  page: string,
+  itemsPerPage: string,
+  filterData?: string
+}
+
+export const getAllMaterials: RequestHandler<unknown, unknown, unknown, GetAllMaterialsQuery> = async (req, res, next) => {
+  const { page, itemsPerPage, filterData } = req.query;
   try {
-    const materials = await MaterialModel.find().exec();
-    res.status(200).json(materials);
+    const data = await MaterialModel.find().exec();
+
+    const pages = Math.ceil(data.length / +itemsPerPage);
+
+    res.status(200).json({
+      materials: data.slice(+itemsPerPage * (+page - 1), +itemsPerPage * +page),
+      pages
+    });
   } catch (error) {
     next(error);
   }
@@ -52,7 +65,6 @@ export const getMaterial: RequestHandler = async (req, res, next) => {
 
 export const createMaterial: RequestHandler<unknown, unknown, CreateMaterialBody, unknown> = async (req, res, next) => {
   const material = req.body;
-  console.log(req.body)
   try {
     if(!material.content) {
       throw createHttpError(400, 'Material must have a text');

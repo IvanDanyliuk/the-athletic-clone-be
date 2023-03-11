@@ -4,7 +4,10 @@ import * as MaterialsController from '../controllers/materials';
 
 const router = express.Router();
 
-router.get('/', MaterialsController.getMaterials);
+router.get('/all', MaterialsController.getAllMaterials);
+router.get('/articles', MaterialsController.getAllMaterials);
+router.get('/notes', MaterialsController.getAllMaterials);
+router.get('/real-time-posts', MaterialsController.getAllMaterials);
 router.get('/:id', MaterialsController.getMaterial);
 router.post('/', MaterialsController.createMaterial);
 router.patch('/:id', MaterialsController.updateMaterial);

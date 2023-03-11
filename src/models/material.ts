@@ -12,6 +12,8 @@ const materialSchema = new Schema({
   title: { type: String },
   content: { type: String, required: true },
   image: { type: String },
+  status: { type: String, required: true },
+  publicationDate: { type: String, required: true },
   views: { type: Number, required: true },
   likes: { type: Number, required: true },
   comments: {
