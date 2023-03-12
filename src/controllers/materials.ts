@@ -35,12 +35,9 @@ export const getAllMaterials: RequestHandler<unknown, unknown, unknown, GetAllMa
   const { page, itemsPerPage, filterData } = req.query;
   try {
     const data = await MaterialModel.find().exec();
-
-    const pages = Math.ceil(data.length / +itemsPerPage);
-
     res.status(200).json({
-      materials: data.slice(+itemsPerPage * (+page - 1), +itemsPerPage * +page),
-      pages
+      materials: data.slice(+itemsPerPage * +page, +itemsPerPage * (+page + 1)),
+      materialsCount: data.length
     });
   } catch (error) {
     next(error);
