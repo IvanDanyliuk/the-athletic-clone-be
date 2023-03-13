@@ -28,15 +28,53 @@ interface CreateMaterialBody {
 interface GetAllMaterialsQuery {
   page: string,
   itemsPerPage: string,
-  filterData?: string
+  filterData?: string,
+  sortData?: {
+    indicator: string,
+    order: Order
+  }
+}
+
+enum Order {
+  asc = 'asc',
+  desc = 'desc'
 }
 
 export const getAllMaterials: RequestHandler<unknown, unknown, unknown, GetAllMaterialsQuery> = async (req, res, next) => {
-  const { page, itemsPerPage, filterData } = req.query;
+  const { page, itemsPerPage, filterData, sortData } = req.query;
   try {
     const data = await MaterialModel.find().exec();
+
+    let response;
+
+    if(sortData) {
+      response = data.sort((a: any, b: any) => {
+        if(sortData.order === Order.asc) {
+          if(sortData.indicator === 'author') {
+            return a.author.name > b.author.name ? 1 : -1
+          } else {
+            return a[sortData.indicator] > b[sortData.indicator] ? 1 : -1
+          }
+        } else {
+          if(sortData.indicator === 'author') {
+            return b.author.name > a.author.name ? 1 : -1
+          } else {
+            return b[sortData.indicator] > a[sortData.indicator] ? 1 : -1
+          }
+        }
+      });
+    }
+
+    if(filterData) {
+      response = data;
+    }
+
+    if(!filterData && !sortData) {
+      response = data;
+    }
+
     res.status(200).json({
-      materials: data.slice(+itemsPerPage * +page, +itemsPerPage * (+page + 1)),
+      materials: response?.slice(+itemsPerPage * +page, +itemsPerPage * (+page + 1)),
       materialsCount: data.length
     });
   } catch (error) {
