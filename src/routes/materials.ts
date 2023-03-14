@@ -11,6 +11,6 @@ router.get('/real-time-posts', MaterialsController.getAllMaterials);
 router.get('/:id', MaterialsController.getMaterial);
 router.post('/', MaterialsController.createMaterial);
 router.patch('/:id', MaterialsController.updateMaterial);
-router.delete('/:id', MaterialsController.deleteMaterial);
+router.delete('/', MaterialsController.deleteMaterial);
 
 export default router;

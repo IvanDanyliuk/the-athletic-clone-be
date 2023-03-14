@@ -156,15 +156,20 @@ export const updateMaterial: RequestHandler<UpdateMaterialParams, unknown, Updat
 };
 
 export const deleteMaterial: RequestHandler = async (req, res, next) => {
-  const { id } = req.params;
-
+  const { id, page, itemsPerPage } = req.query;
+  
   try {
     if(!mongoose.isValidObjectId(id)) {
       throw(createHttpError(400, 'Invalid material id'));
     }
 
     await MaterialModel.findByIdAndDelete(id);
-    res.sendStatus(204);
+    const data = await MaterialModel.find().exec();
+
+    res.status(200).json({
+      materials: data?.slice(+itemsPerPage! * +page!, +itemsPerPage! * (+page! + 1)),
+      materialsCount: data.length
+    });
   } catch (error) {
     next(error);
   }
