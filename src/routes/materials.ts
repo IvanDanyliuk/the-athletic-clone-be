@@ -10,7 +10,7 @@ router.get('/notes', MaterialsController.getAllMaterials);
 router.get('/real-time-posts', MaterialsController.getAllMaterials);
 router.get('/:id', MaterialsController.getMaterial);
 router.post('/', MaterialsController.createMaterial);
-router.patch('/:id', MaterialsController.updateMaterial);
+router.patch('/', MaterialsController.updateMaterial);
 router.delete('/', MaterialsController.deleteMaterial);
 
 export default router;

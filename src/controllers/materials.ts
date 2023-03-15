@@ -111,11 +111,8 @@ export const createMaterial: RequestHandler<unknown, unknown, CreateMaterialBody
   }
 };
 
-interface UpdateMaterialParams {
-  id: string,
-}
-
 interface UpdateMaterialBody {
+  _id: string,
   author: { 
     name: string,
     photoUrl?: string,
@@ -135,12 +132,11 @@ interface UpdateMaterialBody {
   labels: string[]
 }
 
-export const updateMaterial: RequestHandler<UpdateMaterialParams, unknown, UpdateMaterialBody, unknown> = async (req, res, next) => {
-  const { id } = req.params;
+export const updateMaterial: RequestHandler<unknown, unknown, UpdateMaterialBody, unknown> = async (req, res, next) => {
   const materialToUpdate = req.body;
   
   try {
-    if(!mongoose.isValidObjectId(id)) {
+    if(!mongoose.isValidObjectId(materialToUpdate._id)) {
       throw(createHttpError(400, 'Invalid material id'));
     }
 
@@ -148,7 +144,7 @@ export const updateMaterial: RequestHandler<UpdateMaterialParams, unknown, Updat
       throw createHttpError(400, 'Material must have a text');
     }
 
-    const updatedMaterial = await MaterialModel.findByIdAndUpdate(id, materialToUpdate);
+    const updatedMaterial = await MaterialModel.findByIdAndUpdate(materialToUpdate._id, materialToUpdate);
     res.status(200).json(updatedMaterial);
   } catch (error) {
     next(error);
