@@ -3,6 +3,8 @@ import mongoose from 'mongoose';
 import createHttpError from 'http-errors';
 import MaterialModel from '../models/material';
 import { UserType } from '../models/user';
+import { IMaterialsFilterData, IMaterialsSortData, Order } from '../types';
+import { filterMaterials, sortMaterials } from '../util/helpers';
 
 
 interface CreateMaterialBody {
@@ -25,20 +27,16 @@ interface CreateMaterialBody {
   labels: string[]
 }
 
+
+
 interface GetAllMaterialsQuery {
   page: string,
   itemsPerPage: string,
-  filterData?: string,
-  sortData?: {
-    indicator: string,
-    order: Order
-  }
+  filterData?: IMaterialsFilterData,
+  sortData?: IMaterialsSortData
 }
 
-enum Order {
-  asc = 'asc',
-  desc = 'desc'
-}
+
 
 export const getAllMaterials: RequestHandler<unknown, unknown, unknown, GetAllMaterialsQuery> = async (req, res, next) => {
   const { page, itemsPerPage, filterData, sortData } = req.query;
@@ -48,25 +46,16 @@ export const getAllMaterials: RequestHandler<unknown, unknown, unknown, GetAllMa
     let response;
 
     if(sortData) {
-      response = data.sort((a: any, b: any) => {
-        if(sortData.order === Order.asc) {
-          if(sortData.indicator === 'author') {
-            return a.author.name > b.author.name ? 1 : -1
-          } else {
-            return a[sortData.indicator] > b[sortData.indicator] ? 1 : -1
-          }
-        } else {
-          if(sortData.indicator === 'author') {
-            return b.author.name > a.author.name ? 1 : -1
-          } else {
-            return b[sortData.indicator] > a[sortData.indicator] ? 1 : -1
-          }
-        }
-      });
+      response = sortMaterials(data, sortData);
     }
 
     if(filterData) {
-      response = data;
+      response = filterMaterials(data, filterData);
+    }
+
+    if(filterData && sortData) {
+      const filteredData = filterMaterials(data, filterData);
+      response = sortMaterials(filteredData, sortData);
     }
 
     if(!filterData && !sortData) {
@@ -75,7 +64,7 @@ export const getAllMaterials: RequestHandler<unknown, unknown, unknown, GetAllMa
 
     res.status(200).json({
       materials: response?.slice(+itemsPerPage * +page, +itemsPerPage * (+page + 1)),
-      materialsCount: data.length
+      materialsCount: response ? response.length : data.length 
     });
   } catch (error) {
     next(error);

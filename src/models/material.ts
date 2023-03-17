@@ -25,6 +25,6 @@ const materialSchema = new Schema({
   timestamps: true
 });
 
-type Material = InferSchemaType<typeof materialSchema>;
+export type Material = InferSchemaType<typeof materialSchema>;
 
 export default model<Material>('Material', materialSchema);
