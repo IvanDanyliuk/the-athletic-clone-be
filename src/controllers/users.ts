@@ -1,4 +1,5 @@
 import { RequestHandler } from 'express';
+import mongoose from 'mongoose';
 import createHttpError from 'http-errors';
 import UserModel from '../models/user';
 import bcrypt from 'bcrypt';
@@ -221,15 +222,20 @@ export const updateUser: RequestHandler<UpdateUserParams, unknown, UpdateUserBod
 };
 
 export const deleteUser: RequestHandler = async (req, res, next) => {
-  const { id } = req.params;
-  const authenticatedUserId = req.session.userId;
-
+  const { id, page, itemsPerPage } = req.query;
+  
   try {
-    if(authenticatedUserId) {
-      req.session.destroy(error => error && next(error));
+    if(!mongoose.isValidObjectId(id)) {
+      throw(createHttpError(400, 'Invalid user id'));
     }
+
     await UserModel.findByIdAndDelete(id);
-    res.sendStatus(204);
+    const data = await UserModel.find().exec();
+
+    res.status(200).json({
+      users: data?.slice(+itemsPerPage! * +page!, +itemsPerPage! * (+page! + 1)),
+      usersCount: data.length
+    });
   } catch (error) {
     next(error);
   }
