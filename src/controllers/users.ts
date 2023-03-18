@@ -2,6 +2,8 @@ import { RequestHandler } from 'express';
 import createHttpError from 'http-errors';
 import UserModel from '../models/user';
 import bcrypt from 'bcrypt';
+import { IUserFilterData, IUserSortData } from '../types';
+import { filterUsers, sortUsers } from '../util/helpers';
 
 
 export const getAuthenticatedUser: RequestHandler = async (req, res, next) => {
@@ -137,6 +139,46 @@ export const getUsersByRole: RequestHandler = async (req, res, next) => {
 
     const users = await UserModel.find({ role }).exec();
     res.status(200).json(users);
+  } catch (error) {
+    next(error);
+  }
+};
+
+interface GetAllUsersQuery {
+  page: string,
+  itemsPerPage: string,
+  filterData?: IUserFilterData,
+  sortData?: IUserSortData
+}
+
+export const getAllUsers: RequestHandler<unknown, unknown, unknown, GetAllUsersQuery> = async (req, res, next) => {
+  const { page, itemsPerPage, filterData, sortData } = req.query;
+  try {
+    const data = await UserModel.find().exec();
+
+    let response;
+
+    if(sortData) {
+      response = sortUsers(data, sortData);
+    }
+
+    if(filterData) {
+      response = filterUsers(data, filterData);
+    }
+
+    if(filterData && sortData) {
+      const filteredData = filterUsers(data, filterData);
+      response = sortUsers(filteredData, sortData);
+    }
+
+    if(!filterData && !sortData) {
+      response = data;
+    }
+
+    res.status(200).json({
+      users: response?.slice(+itemsPerPage * +page, +itemsPerPage * (+page + 1)),
+      usersCount: response ? response.length : data.length 
+    });
   } catch (error) {
     next(error);
   }

@@ -14,3 +14,15 @@ export enum Order {
   asc = 'asc',
   desc = 'desc'
 }
+
+export interface IUserFilterData {
+  organization?: string,
+  location?: string,
+  dateFrom?: string,
+  dateTo?: string
+}
+
+export interface IUserSortData {
+  indicator: string,
+  order: Order
+}
