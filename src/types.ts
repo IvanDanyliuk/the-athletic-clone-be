@@ -16,7 +16,7 @@ export enum Order {
 }
 
 export interface IUserFilterData {
-  organization?: string,
+  role?: string,
   location?: string,
   dateFrom?: string,
   dateTo?: string

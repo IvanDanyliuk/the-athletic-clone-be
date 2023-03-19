@@ -185,6 +185,17 @@ export const getAllUsers: RequestHandler<unknown, unknown, unknown, GetAllUsersQ
   }
 };
 
+export const getUsersLocations: RequestHandler = async (req, res, next) => {
+  try {
+    const data = await UserModel.find().exec();
+    const countries = data.map(user => user.location ? user.location : 'Unknown');
+    const uniqueValues = [...new Set(countries)];
+    res.status(200).json(uniqueValues);
+  } catch (error) {
+    next(error);
+  }
+}
+
 interface UpdateUserParams {
   id: string,
 }

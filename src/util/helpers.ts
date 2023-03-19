@@ -38,11 +38,11 @@ export const sortMaterials = (materials: Material[], sortData: IMaterialsSortDat
 };
 
 export const filterUsers = (users: UserType[], filterData: IUserFilterData) => {
-  const { location, organization, dateFrom, dateTo } = filterData;
+  const { location, role, dateFrom, dateTo } = filterData;
 
   return users
     .filter(user => location ? user.location == location : true)
-    .filter(user => organization ? user.organization == organization : true)
+    .filter(user => role ? user.role == role : true)
     .filter(user => dateFrom && dateTo ? 
       Date.parse(user.createdAt.toISOString()) >= Date.parse(dateFrom!) && 
       Date.parse(user.createdAt.toISOString()) <= Date.parse(dateTo!) 
