@@ -201,10 +201,11 @@ interface UpdateUserParams {
 }
 
 interface UpdateUserBody {
+  _id: string,
   firstName: string,
   lastName: string,
   email: string,
-  password: string,
+  password?: string,
   userPhotoUrl?: string,
   role: string,
   location?: string,
@@ -212,8 +213,7 @@ interface UpdateUserBody {
   position?: string
 }
 
-export const updateUser: RequestHandler<UpdateUserParams, unknown, UpdateUserBody, unknown> = async (req, res, next) => {
-  const { id } = req.params;
+export const updateUser: RequestHandler<unknown, unknown, UpdateUserBody, unknown> = async (req, res, next) => {
   const userToUpdate = req.body;
 
   try {
@@ -225,7 +225,7 @@ export const updateUser: RequestHandler<UpdateUserParams, unknown, UpdateUserBod
       throw(createHttpError(401, 'User must have an email'));
     }
 
-    const updatedUser = await UserModel.findByIdAndUpdate(id, userToUpdate);
+    const updatedUser = await UserModel.findByIdAndUpdate(userToUpdate._id, userToUpdate);
     res.status(200).json(updatedUser);
   } catch (error) {
     next(error);
