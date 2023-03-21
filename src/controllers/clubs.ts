@@ -2,6 +2,8 @@ import { RequestHandler } from 'express';
 import mongoose from 'mongoose';
 import createHttpError from 'http-errors';
 import ClubModel from '../models/club';
+import { filterClubs, sortClubs } from '../util/helpers';
+import { IClubsFilterData, IMaterialsSortData } from '../types';
 
 
 interface CreateClubBody {
@@ -13,10 +15,41 @@ interface CreateClubBody {
   stadium?: string
 }
 
-export const getClubs: RequestHandler = async (req, res, next) => {
+interface GetAllClubsQuery {
+  page: string,
+  itemsPerPage: string,
+  filterData?: IClubsFilterData,
+  sortData?: IMaterialsSortData
+}
+
+export const getAllClubs: RequestHandler<unknown, unknown, unknown, GetAllClubsQuery> = async (req, res, next) => {
+  const { page, itemsPerPage, filterData, sortData } = req.query;
   try {
-    const clubs = await ClubModel.find().exec();
-    res.status(200).json(clubs);  
+    const data = await ClubModel.find().exec();
+
+    let response;
+
+    if(sortData) {
+      response = sortClubs(data, sortData);
+    }
+
+    if(filterData) {
+      response = filterClubs(data, filterData);
+    }
+
+    if(filterData && sortData) {
+      const filteredData = filterClubs(data, filterData);
+      response = sortClubs(filteredData, sortData);
+    }
+
+    if(!filterData && !sortData) {
+      response = data;
+    }
+
+    res.status(200).json({
+      clubs: response?.slice(+itemsPerPage * +page, +itemsPerPage * (+page + 1)),
+      clubsCount: response ? response.length : data.length
+    });  
   } catch (error) {
     next(error)
   }
@@ -96,15 +129,21 @@ export const updateClub: RequestHandler<UpdateClubParams, unknown, UpdateClubBod
 };
 
 export const deleteClub: RequestHandler = async (req, res, next) => {
-  const { id } = req.params;
+  const { id, page, itemsPerPage } = req.query;
+  
   try {
     if(!mongoose.isValidObjectId(id)) {
       throw(createHttpError(400, 'Invalid club id'));
     }
 
     await ClubModel.findByIdAndDelete(id);
-    res.sendStatus(204);
+    const data = await ClubModel.find().exec();
+
+    res.status(200).json({
+      clubs: data?.slice(+itemsPerPage! * +page!, +itemsPerPage! * (+page! + 1)),
+      clubsCount: data.length
+    });
   } catch (error) {
     next(error);
   }
-}
+};

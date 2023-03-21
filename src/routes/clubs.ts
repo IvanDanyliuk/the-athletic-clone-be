@@ -4,10 +4,10 @@ import * as ClubsController from '../controllers/clubs';
 
 const router = express.Router();
 
-router.get('/', ClubsController.getClubs);
-router.get('/:id', ClubsController.getClub);
+router.get('/all', ClubsController.getAllClubs);
+router.get('/', ClubsController.getClub);
 router.post('/', ClubsController.createClub);
 router.patch('/:id', ClubsController.updateClub);
-router.delete('/:id', ClubsController.deleteClub);
+router.delete('/', ClubsController.deleteClub);
 
 export default router;

@@ -26,3 +26,12 @@ export interface IUserSortData {
   indicator: string,
   order: Order
 }
+
+export interface IClubsFilterData {
+  country?: string,
+}
+
+export interface IClubsSortData {
+  indicator: string,
+  order: Order
+}
