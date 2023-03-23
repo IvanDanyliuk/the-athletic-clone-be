@@ -9,7 +9,7 @@ interface CreateCompetitionBody {
   fullName: string,
   shortName: string,
   country: string,
-  clubs: ClubType[],
+  clubs: string[],
   logoUrl: string,
   type: string,
 }

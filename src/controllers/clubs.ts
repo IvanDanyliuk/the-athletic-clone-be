@@ -55,6 +55,21 @@ export const getAllClubs: RequestHandler<unknown, unknown, unknown, GetAllClubsQ
   }
 };
 
+export const getClubsByCountry: RequestHandler = async (req, res, next) => {
+  const { country } = req.query;
+  try {
+    const clubs = country ? 
+      await ClubModel.find({ country }).exec() : 
+      await ClubModel.find().exec();
+    if(!clubs) {
+      throw(createHttpError(404, 'Clubs not found'));
+    }
+    res.status(200).json(clubs);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getClub: RequestHandler = async (req, res, next) => {
   const { id } = req.params;
   try {
@@ -99,6 +114,7 @@ interface UpdateClubParams {
 }
 
 interface UpdateClubBody {
+  _id: string,
   fullName: string,
   commonName: string,
   shortName: string,
@@ -107,12 +123,11 @@ interface UpdateClubBody {
   stadium?: string
 }
 
-export const updateClub: RequestHandler<UpdateClubParams, unknown, UpdateClubBody, unknown> = async (req, res, next) => {
-  const { id } = req.params;
+export const updateClub: RequestHandler<unknown, unknown, UpdateClubBody, unknown> = async (req, res, next) => {
   const clubToUpdate = req.body;
 
   try {
-    if(!mongoose.isValidObjectId(id)) {
+    if(!mongoose.isValidObjectId(clubToUpdate._id)) {
       throw(createHttpError(400, 'Invalid club id'));
     }
     if(!clubToUpdate.fullName || !clubToUpdate.commonName || !clubToUpdate.shortName) {
@@ -121,7 +136,7 @@ export const updateClub: RequestHandler<UpdateClubParams, unknown, UpdateClubBod
     if(!clubToUpdate.country) {
       throw createHttpError(400, 'Club must have a country');
     }
-    const updatedClub = await ClubModel.findByIdAndUpdate(id, clubToUpdate);
+    const updatedClub = await ClubModel.findByIdAndUpdate(clubToUpdate._id, clubToUpdate);
     res.status(200).json(updatedClub);
   } catch (error) {
     next(error);
