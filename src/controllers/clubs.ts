@@ -58,7 +58,7 @@ export const getAllClubs: RequestHandler<unknown, unknown, unknown, GetAllClubsQ
 export const getClubsByCountry: RequestHandler = async (req, res, next) => {
   const { country } = req.query;
   try {
-    const clubs = country ? 
+    const clubs = country !== 'International' ? 
       await ClubModel.find({ country }).exec() : 
       await ClubModel.find().exec();
     if(!clubs) {

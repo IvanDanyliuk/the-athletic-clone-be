@@ -85,10 +85,11 @@ export const sortClubs = (clubs: ClubType[], sortData: IClubsSortData) => {
 };
 
 export const filterCompetitions = (clubs: CompetitionType[], filterData: ICompetitionsFilterData) => {
-  const { country } = filterData;
+  const { country, type } = filterData;
 
   return clubs
-    .filter(clubs => country ? clubs.country == country : true);
+    .filter(clubs => country ? clubs.country == country : true)
+    .filter(clubs => type ? clubs.type == type : true);
 };
 
 
