@@ -1,7 +1,8 @@
 import { ClubType } from '../models/club';
+import { CompetitionType } from '../models/competition';
 import { Material } from '../models/material';
 import { UserType } from '../models/user';
-import { IClubsFilterData, IClubsSortData, IMaterialsFilterData, IMaterialsSortData, IUserFilterData, IUserSortData, Order } from '../types';
+import { IClubsFilterData, IClubsSortData, ICompetitionsFilterData, ICompetitionsSortData, IMaterialsFilterData, IMaterialsSortData, IUserFilterData, IUserSortData, Order } from '../types';
 
 
 export const filterMaterials = (materials: Material[], filterData: IMaterialsFilterData) => {
@@ -72,6 +73,26 @@ export const filterClubs = (clubs: ClubType[], filterData: IClubsFilterData) => 
 
 
 export const sortClubs = (clubs: ClubType[], sortData: IClubsSortData) => {
+  const { indicator, order } = sortData;
+
+  return clubs.sort((a: any, b: any) => {
+    if(order === Order.asc) {
+      return a[indicator] > b[indicator] ? 1 : -1;
+    } else {
+      return b[indicator] > a[indicator] ? 1 : -1;
+    }
+  });
+};
+
+export const filterCompetitions = (clubs: CompetitionType[], filterData: ICompetitionsFilterData) => {
+  const { country } = filterData;
+
+  return clubs
+    .filter(clubs => country ? clubs.country == country : true);
+};
+
+
+export const sortCompetitions = (clubs: CompetitionType[], sortData: ICompetitionsSortData) => {
   const { indicator, order } = sortData;
 
   return clubs.sort((a: any, b: any) => {

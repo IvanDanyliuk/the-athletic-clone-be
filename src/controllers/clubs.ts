@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import createHttpError from 'http-errors';
 import ClubModel from '../models/club';
 import { filterClubs, sortClubs } from '../util/helpers';
-import { IClubsFilterData, IMaterialsSortData } from '../types';
+import { IClubsFilterData, IClubsSortData } from '../types';
 
 
 interface CreateClubBody {
@@ -19,7 +19,7 @@ interface GetAllClubsQuery {
   page: string,
   itemsPerPage: string,
   filterData?: IClubsFilterData,
-  sortData?: IMaterialsSortData
+  sortData?: IClubsSortData
 }
 
 export const getAllClubs: RequestHandler<unknown, unknown, unknown, GetAllClubsQuery> = async (req, res, next) => {

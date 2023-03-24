@@ -3,6 +3,8 @@ import mongoose from 'mongoose';
 import createHttpError from 'http-errors';
 import CompetitionModel from '../models/competition';
 import { ClubType } from '../models/club';
+import { ICompetitionsFilterData, ICompetitionsSortData } from '../types';
+import { filterCompetitions, sortCompetitions } from '../util/helpers';
 
 
 interface CreateCompetitionBody {
@@ -14,10 +16,41 @@ interface CreateCompetitionBody {
   type: string,
 }
 
-export const getCompetitions: RequestHandler = async (req, res, next) => {
+interface GetAllCompetitionsQuery {
+  page: string,
+  itemsPerPage: string,
+  filterData?: ICompetitionsFilterData,
+  sortData?: ICompetitionsSortData
+}
+
+export const getAllCompetitions: RequestHandler<unknown, unknown, unknown, GetAllCompetitionsQuery> = async (req, res, next) => {
+  const { page, itemsPerPage, filterData, sortData } = req.query;
   try {
-    const competitions = await CompetitionModel.find().exec();
-    res.status(200).json(competitions);
+    const data = await CompetitionModel.find().exec();
+
+    let response;
+
+    if(sortData) {
+      response = sortCompetitions(data, sortData);
+    }
+
+    if(filterData) {
+      response = filterCompetitions(data, filterData);
+    }
+
+    if(filterData && sortData) {
+      const filteredData = filterCompetitions(data, filterData);
+      response = sortCompetitions(filteredData, sortData);
+    }
+
+    if(!filterData && !sortData) {
+      response = data;
+    }
+
+    res.status(200).json({
+      competitions: response?.slice(+itemsPerPage * +page, +itemsPerPage * (+page + 1)),
+      competitionsCount: response ? response.length : data.length
+    });  
   } catch (error) {
     next(error);
   }
@@ -94,7 +127,7 @@ export const updateCompetition: RequestHandler<UpdateCompetitionParams, unknown,
 };
 
 export const deleteCompetition: RequestHandler = async (req, res, next) => {
-  const { id } = req.params;
+  const { id, page, itemsPerPage } = req.query;
 
   try {
     if(!mongoose.isValidObjectId(id)) {
@@ -103,7 +136,12 @@ export const deleteCompetition: RequestHandler = async (req, res, next) => {
 
     await CompetitionModel.findByIdAndDelete(id);
 
-    res.sendStatus(204);
+    const data = await CompetitionModel.find().exec();
+
+    res.status(200).json({
+      competitions: data?.slice(+itemsPerPage! * +page!, +itemsPerPage! * (+page! + 1)),
+      competitionsCount: data.length
+    });
   } catch (error) {
     next(error);
   }

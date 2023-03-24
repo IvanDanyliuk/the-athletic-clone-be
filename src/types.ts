@@ -35,3 +35,13 @@ export interface IClubsSortData {
   indicator: string,
   order: Order
 }
+
+export interface ICompetitionsFilterData {
+  country?: string,
+  type?: string
+}
+
+export interface ICompetitionsSortData {
+  indicator: string,
+  order: Order
+}
