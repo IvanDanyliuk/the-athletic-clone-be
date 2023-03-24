@@ -92,25 +92,22 @@ export const createCompetition: RequestHandler<unknown, unknown, CreateCompetiti
   }
 };
 
-interface UpdateCompetitionParams {
-  id: string,
-}
-
 interface UpdateCompetitionBody {
+  _id: string,
   fullName: string,
   shortName: string,
   country: string,
   clubs: ClubType[],
   logoUrl: string,
   type: string,
+  createdAt: string
 }
 
-export const updateCompetition: RequestHandler<UpdateCompetitionParams, unknown, UpdateCompetitionBody, unknown> = async (req, res, next) => {
-  const { id } = req.params;
+export const updateCompetition: RequestHandler<unknown, unknown, UpdateCompetitionBody, unknown> = async (req, res, next) => {
   const competitionToUpdate = req.body;
 
   try {
-    if(!mongoose.isValidObjectId(id)) {
+    if(!mongoose.isValidObjectId(competitionToUpdate._id)) {
       throw(createHttpError(400, 'Invalid competition id'));
     }
     if(!competitionToUpdate.fullName) {
@@ -119,7 +116,9 @@ export const updateCompetition: RequestHandler<UpdateCompetitionParams, unknown,
     if(competitionToUpdate.clubs.length < 2) {
       throw createHttpError(400, 'Competition must have at least two clubs');
     }
-    const updatedCompetition = await CompetitionModel.findByIdAndUpdate(id, competitionToUpdate);
+
+    const updatedCompetition = await CompetitionModel.findByIdAndUpdate(competitionToUpdate._id, competitionToUpdate);
+    
     res.status(200).json(updatedCompetition);
   } catch (error) {
     next(error);
