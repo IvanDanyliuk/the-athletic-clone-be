@@ -14,6 +14,6 @@ const playerSchema = new Schema({
   timestamps: true
 });
 
-type PlayerType = InferSchemaType<typeof playerSchema>;
+export type PlayerType = InferSchemaType<typeof playerSchema>;
 
 export default model<PlayerType>('Player', playerSchema);

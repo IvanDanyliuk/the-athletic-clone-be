@@ -109,10 +109,6 @@ export const createClub: RequestHandler<unknown, unknown, CreateClubBody,unknown
   }
 };
 
-interface UpdateClubParams {
-  id: string,
-}
-
 interface UpdateClubBody {
   _id: string,
   fullName: string,
