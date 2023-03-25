@@ -4,10 +4,10 @@ import * as PlayersController from '../controllers/players';
 
 const router = express.Router();
 
-router.get('/', PlayersController.getPlayers);
+router.get('/all', PlayersController.getAllPlayers);
 router.get('/:id', PlayersController.getPlayer);
 router.post('/', PlayersController.createPlayer);
 router.patch('/:id', PlayersController.updatePlayer);
-router.delete('/:id', PlayersController.deletePlayer);
+router.delete('/', PlayersController.deletePlayer);
 
 export default router;

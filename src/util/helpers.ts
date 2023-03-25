@@ -1,8 +1,9 @@
 import { ClubType } from '../models/club';
 import { CompetitionType } from '../models/competition';
 import { Material } from '../models/material';
+import { PlayerType } from '../models/player';
 import { UserType } from '../models/user';
-import { IClubsFilterData, IClubsSortData, ICompetitionsFilterData, ICompetitionsSortData, IMaterialsFilterData, IMaterialsSortData, IUserFilterData, IUserSortData, Order } from '../types';
+import { IClubsFilterData, IClubsSortData, ICompetitionsFilterData, ICompetitionsSortData, IMaterialsFilterData, IMaterialsSortData, IPlayersFilterData, IPlayersSortData, IUserFilterData, IUserSortData, Order } from '../types';
 
 
 export const filterMaterials = (materials: Material[], filterData: IMaterialsFilterData) => {
@@ -97,6 +98,33 @@ export const sortCompetitions = (clubs: CompetitionType[], sortData: ICompetitio
   const { indicator, order } = sortData;
 
   return clubs.sort((a: any, b: any) => {
+    if(order === Order.asc) {
+      return a[indicator] > b[indicator] ? 1 : -1;
+    } else {
+      return b[indicator] > a[indicator] ? 1 : -1;
+    }
+  });
+};
+
+export const filterPlayers = (players: PlayerType[], filterData: IPlayersFilterData) => {
+  const { club, country, dateFrom, dateTo, position } = filterData;
+
+  return players
+    .filter(player => club ? player.club == club : true)
+    .filter(player => country ? player.country == country : true)
+    .filter(player => position ? player.position == position : true)
+    .filter(player => dateFrom && dateTo ? 
+      Date.parse(player.createdAt.toISOString()) >= Date.parse(dateFrom!) && 
+      Date.parse(player.createdAt.toISOString()) <= Date.parse(dateTo!) 
+      : true
+    );
+};
+
+
+export const sortPlayers = (players: PlayerType[], sortData: IPlayersSortData) => {
+  const { indicator, order } = sortData;
+
+  return players.sort((a: any, b: any) => {
     if(order === Order.asc) {
       return a[indicator] > b[indicator] ? 1 : -1;
     } else {

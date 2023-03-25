@@ -45,3 +45,16 @@ export interface ICompetitionsSortData {
   indicator: string,
   order: Order
 }
+
+export interface IPlayersFilterData {
+  club?: string,
+  position?: string,
+  country?: string,
+  dateFrom?: string,
+  dateTo?: string,
+}
+
+export interface IPlayersSortData {
+  indicator: string,
+  order: Order
+}

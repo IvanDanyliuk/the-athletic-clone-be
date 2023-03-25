@@ -3,6 +3,8 @@ import mongoose from 'mongoose';
 import createHttpError from 'http-errors';
 import PlayerModel from '../models/player';
 import { ClubType } from '../models/club';
+import { IPlayersFilterData, IPlayersSortData } from '../types';
+import { filterPlayers, sortPlayers } from '../util/helpers';
 
 
 interface CreatePlayerBody {
@@ -16,10 +18,42 @@ interface CreatePlayerBody {
   club?: ClubType | undefined,
 }
 
-export const getPlayers: RequestHandler = async (req, res, next) => {
+interface GetAllPlayersQuery {
+  page: string,
+  itemsPerPage: string,
+  filterData?: IPlayersFilterData,
+  sortData?: IPlayersSortData
+}
+
+export const getAllPlayers: RequestHandler<unknown, unknown, unknown, GetAllPlayersQuery> = async (req, res, next) => {
+  const { page, itemsPerPage, filterData, sortData } = req.query;
+
   try {
-    const players = await PlayerModel.find().exec();
-    res.status(200).json(players);
+    const data = await PlayerModel.find().exec();
+
+    let response;
+
+    if(sortData) {
+      response = sortPlayers(data, sortData);
+    }
+
+    if(filterData) {
+      response = filterPlayers(data, filterData);
+    }
+
+    if(filterData && sortData) {
+      const filteredData = filterPlayers(data, filterData);
+      response = sortPlayers(filteredData, sortData);
+    }
+
+    if(!filterData && !sortData) {
+      response = data;
+    }
+
+    res.status(200).json({
+      players: response?.slice(+itemsPerPage * +page, +itemsPerPage * (+page + 1)),
+      playersCount: response ? response.length : data.length
+    });
   } catch (error) {
     next(error);
   }
@@ -105,7 +139,7 @@ export const updatePlayer: RequestHandler<UpdatePlayerParams, unknown, UpdatePla
 };
 
 export const deletePlayer: RequestHandler = async (req, res, next) => {
-  const { id } = req.params;
+  const { id, page, itemsPerPage } = req.query;
 
   try {
     if(!mongoose.isValidObjectId(id)) {
@@ -113,7 +147,13 @@ export const deletePlayer: RequestHandler = async (req, res, next) => {
     }
 
     await PlayerModel.findByIdAndDelete(id);
-    res.sendStatus(204);
+    
+    const data = await PlayerModel.find().exec();
+
+    res.status(200).json({
+      players: data?.slice(+itemsPerPage! * +page!, +itemsPerPage! * (+page! + 1)),
+      playersCount: data.length
+    });
   } catch (error) {
     next(error);
   }
