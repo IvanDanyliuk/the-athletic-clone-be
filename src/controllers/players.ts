@@ -95,11 +95,8 @@ export const createPlayer: RequestHandler<unknown, unknown, CreatePlayerBody, un
   }
 };
 
-interface UpdatePlayerParams {
-  id: string,
-}
-
 interface UpdatePlayerBody {
+  _id: string,
   firstName: string,
   lastName: string,
   birthDate: string,
@@ -108,14 +105,14 @@ interface UpdatePlayerBody {
   number?: number | undefined,
   position: string,
   club?: ClubType | undefined,
+  createdAt: string
 }
 
-export const updatePlayer: RequestHandler<UpdatePlayerParams, unknown, UpdatePlayerBody, unknown> = async (req, res, next) => {
-  const { id } = req.params;
+export const updatePlayer: RequestHandler<unknown, unknown, UpdatePlayerBody, unknown> = async (req, res, next) => {
   const playerToUpdate = req.body;
 
   try {
-    if(!mongoose.isValidObjectId(id)) {
+    if(!mongoose.isValidObjectId(playerToUpdate._id)) {
       throw(createHttpError(400, 'Invalid player id'));
     }
     if(!playerToUpdate.firstName || !playerToUpdate.lastName) {
@@ -131,7 +128,7 @@ export const updatePlayer: RequestHandler<UpdatePlayerParams, unknown, UpdatePla
       throw createHttpError(400, 'Player must have a position');
     }
 
-    const updatedPlayer = await PlayerModel.findByIdAndUpdate(id, playerToUpdate);
+    const updatedPlayer = await PlayerModel.findByIdAndUpdate(playerToUpdate._id, playerToUpdate);
     res.status(200).json(updatedPlayer);
   } catch (error) {
     next(error);
