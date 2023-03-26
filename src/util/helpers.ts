@@ -114,8 +114,8 @@ export const filterPlayers = (players: PlayerType[], filterData: IPlayersFilterD
     .filter(player => country ? player.country == country : true)
     .filter(player => position ? player.position == position : true)
     .filter(player => dateFrom && dateTo ? 
-      Date.parse(player.createdAt.toISOString()) >= Date.parse(dateFrom!) && 
-      Date.parse(player.createdAt.toISOString()) <= Date.parse(dateTo!) 
+      Date.parse(player.birthDate.toISOString()) >= Date.parse(dateFrom!) && 
+      Date.parse(player.birthDate.toISOString()) <= Date.parse(dateTo!) 
       : true
     );
 };
