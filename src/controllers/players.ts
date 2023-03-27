@@ -25,7 +25,7 @@ interface GetAllPlayersQuery {
   sortData?: IPlayersSortData
 }
 
-export const getAllPlayers: RequestHandler<unknown, unknown, unknown, GetAllPlayersQuery> = async (req, res, next) => {
+export const getPlayers: RequestHandler<unknown, unknown, unknown, GetAllPlayersQuery> = async (req, res, next) => {
   const { page, itemsPerPage, filterData, sortData } = req.query;
 
   try {

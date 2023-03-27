@@ -8,7 +8,8 @@ import { ClubType } from '../models/club';
 
 interface CreateScheduleBody {
   competition: CompetitionType,
-  tournament: {
+  season: string,
+  cup: {
     groupStage: [
       {
         groupIndex: string,

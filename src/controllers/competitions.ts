@@ -23,7 +23,7 @@ interface GetAllCompetitionsQuery {
   sortData?: ICompetitionsSortData
 }
 
-export const getAllCompetitions: RequestHandler<unknown, unknown, unknown, GetAllCompetitionsQuery> = async (req, res, next) => {
+export const getCompetitions: RequestHandler<unknown, unknown, unknown, GetAllCompetitionsQuery> = async (req, res, next) => {
   const { page, itemsPerPage, filterData, sortData } = req.query;
   try {
     const data = await CompetitionModel.find().exec();
@@ -55,6 +55,18 @@ export const getAllCompetitions: RequestHandler<unknown, unknown, unknown, GetAl
     next(error);
   }
 };
+
+export const getAllCompetitions: RequestHandler = async (req, res, next) => {
+  try {
+    const competitions = await CompetitionModel.find().exec();
+    res.status(200).json({
+      competitons: competitions,
+      competitionsCount: competitions.length
+    })
+  } catch (error) {
+    next(error);
+  }
+}
 
 export const getCompetition: RequestHandler = async (req, res, next) => {
   const { id } = req.params;

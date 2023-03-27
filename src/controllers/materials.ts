@@ -38,7 +38,7 @@ interface GetAllMaterialsQuery {
 
 
 
-export const getAllMaterials: RequestHandler<unknown, unknown, unknown, GetAllMaterialsQuery> = async (req, res, next) => {
+export const getMaterials: RequestHandler<unknown, unknown, unknown, GetAllMaterialsQuery> = async (req, res, next) => {
   const { page, itemsPerPage, filterData, sortData } = req.query;
   try {
     const data = await MaterialModel.find().exec();

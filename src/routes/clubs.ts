@@ -4,9 +4,9 @@ import * as ClubsController from '../controllers/clubs';
 
 const router = express.Router();
 
-router.get('/all', ClubsController.getAllClubs);
+router.get('/', ClubsController.getClubs);
 router.get('/country', ClubsController.getClubsByCountry);
-router.get('/', ClubsController.getClub);
+router.get('/:id', ClubsController.getClub);
 router.post('/', ClubsController.createClub);
 router.patch('/', ClubsController.updateClub);
 router.delete('/', ClubsController.deleteClub);

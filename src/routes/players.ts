@@ -4,7 +4,7 @@ import * as PlayersController from '../controllers/players';
 
 const router = express.Router();
 
-router.get('/all', PlayersController.getAllPlayers);
+router.get('/', PlayersController.getPlayers);
 router.get('/:id', PlayersController.getPlayer);
 router.post('/', PlayersController.createPlayer);
 router.patch('/', PlayersController.updatePlayer);

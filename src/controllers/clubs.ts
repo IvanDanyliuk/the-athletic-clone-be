@@ -22,7 +22,7 @@ interface GetAllClubsQuery {
   sortData?: IClubsSortData
 }
 
-export const getAllClubs: RequestHandler<unknown, unknown, unknown, GetAllClubsQuery> = async (req, res, next) => {
+export const getClubs: RequestHandler<unknown, unknown, unknown, GetAllClubsQuery> = async (req, res, next) => {
   const { page, itemsPerPage, filterData, sortData } = req.query;
   try {
     const data = await ClubModel.find().exec();
