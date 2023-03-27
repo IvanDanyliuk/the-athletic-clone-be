@@ -4,7 +4,7 @@ import { Schema, model, InferSchemaType } from 'mongoose';
 const scheduleSchema = new Schema({
   competition: { type: Schema.Types.Mixed, ref: 'Competition' },
   season: { type: String, required: true },
-  schedule: [{
+  fixture: [{
     matchweekName: { type: String, required: true },
     games: [
       {

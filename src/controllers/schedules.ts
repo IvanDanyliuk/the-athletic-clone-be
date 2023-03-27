@@ -9,46 +9,16 @@ import { ClubType } from '../models/club';
 interface CreateScheduleBody {
   competition: CompetitionType,
   season: string,
-  cup: {
-    groupStage: [
-      {
-        groupIndex: string,
-        teams: ClubType[],
-        games: [
-          {
-            home: ClubType,
-            away: ClubType,
-            date: Date,
-            location: string,
-            score: string
-          },
-        ],
-      },
-    ],
-    knockoutStage: [
-      {
-        stageName: string,
-        teams: ClubType[],
-        games: [
-          {
-            home: ClubType,
-            away: ClubType,
-            date: Date,
-            location: string,
-            score: string
-          },
-        ],
-      },
-    ],
-  },
-  league: [
+  fixture: [
     {
       matchweekName: string,
-      home: ClubType[],
-      away: ClubType[],
-      date: Date,
-      location: string,
-      score: string
+      games: {
+        home: ClubType[],
+        away: ClubType[],
+        date: Date,
+        location: string,
+        score: string
+      }[]
     }
   ]
 }

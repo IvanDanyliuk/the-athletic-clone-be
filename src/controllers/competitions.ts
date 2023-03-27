@@ -2,6 +2,7 @@ import { RequestHandler } from 'express';
 import mongoose from 'mongoose';
 import createHttpError from 'http-errors';
 import CompetitionModel from '../models/competition';
+import ClubModel from '../models/club';
 import { ClubType } from '../models/club';
 import { ICompetitionsFilterData, ICompetitionsSortData } from '../types';
 import { filterCompetitions, sortCompetitions } from '../util/helpers';
@@ -88,7 +89,6 @@ export const getCompetition: RequestHandler = async (req, res, next) => {
 
 export const createCompetition: RequestHandler<unknown, unknown, CreateCompetitionBody, unknown> = async (req, res, next) => {
   const competition = req.body;
-
   try {
     if(!competition.fullName) {
       throw createHttpError(400, 'Competition must have a name');
@@ -97,7 +97,14 @@ export const createCompetition: RequestHandler<unknown, unknown, CreateCompetiti
       throw createHttpError(400, 'Competition must have at least two clubs');
     }
 
-    const newCompetition = await CompetitionModel.create(competition);
+    const clubIds = competition.clubs;
+    const clubs = await ClubModel.find({ _id: { "$in": clubIds } }).exec();
+    const addedCompetition = {
+      ...competition,
+      clubs
+    };
+
+    const newCompetition = await CompetitionModel.create(addedCompetition);
     res.status(201).json(newCompetition);
   } catch (error) {
     next(error);
@@ -129,7 +136,14 @@ export const updateCompetition: RequestHandler<unknown, unknown, UpdateCompetiti
       throw createHttpError(400, 'Competition must have at least two clubs');
     }
 
-    const updatedCompetition = await CompetitionModel.findByIdAndUpdate(competitionToUpdate._id, competitionToUpdate);
+    const clubIds = competitionToUpdate.clubs;
+    const clubs = await ClubModel.find({ _id: { "$in": clubIds } }).exec();
+    const addedCompetition = {
+      ...competitionToUpdate,
+      clubs
+    };
+
+    const updatedCompetition = await CompetitionModel.findByIdAndUpdate(competitionToUpdate._id, addedCompetition);
     
     res.status(200).json(updatedCompetition);
   } catch (error) {

@@ -5,7 +5,7 @@ const competitionSchema = new Schema({
   fullName: { type: String, required: true },
   shortName: { type: String, required: true },
   country: { type: String, required: true },
-  clubs: [{ type: String }],
+  clubs: [{ type: Schema.Types.Mixed, ref: 'Club' }],
   logoUrl: { type: String },
   type: { type: String, required: true },
 }, {
