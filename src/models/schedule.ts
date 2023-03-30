@@ -8,6 +8,7 @@ const scheduleSchema = new Schema({
     matchweekName: { type: String, required: true },
     games: [
       {
+        id: { type: String }, 
         home: { type: Schema.Types.Mixed, ref: 'Club' },
         away: { type: Schema.Types.Mixed, ref: 'Club' },
         date: { type: Date, required: true },

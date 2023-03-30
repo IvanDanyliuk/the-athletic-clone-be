@@ -2,6 +2,7 @@ import { RequestHandler } from 'express';
 import mongoose from 'mongoose';
 import createHttpError from 'http-errors';
 import ScheduleModel from '../models/schedule';
+import CompetitionModel from '../models/competition';
 import { CompetitionType } from '../models/competition';
 import { ClubType } from '../models/club';
 
@@ -13,6 +14,7 @@ interface CreateScheduleBody {
     {
       matchweekName: string,
       games: {
+        id: string,
         home: ClubType[],
         away: ClubType[],
         date: Date,
@@ -54,7 +56,14 @@ export const createSchedule: RequestHandler<unknown, unknown, CreateScheduleBody
     if(!schedule.competition) {
       throw createHttpError(400, 'Schedule must have a competition');
     }
-    const newSchedule = await ScheduleModel.create(schedule);
+
+    const competition = await CompetitionModel.findById(schedule.competition);
+    const modifiedSchedule = {
+      ...schedule,
+      competition
+    };
+
+    const newSchedule = await ScheduleModel.create(modifiedSchedule);
     res.status(201).json(newSchedule);
   } catch (error) {
     next(error);

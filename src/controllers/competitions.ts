@@ -60,8 +60,9 @@ export const getCompetitions: RequestHandler<unknown, unknown, unknown, GetAllCo
 export const getAllCompetitions: RequestHandler = async (req, res, next) => {
   try {
     const competitions = await CompetitionModel.find().exec();
+    
     res.status(200).json({
-      competitons: competitions,
+      competitions,
       competitionsCount: competitions.length
     })
   } catch (error) {
@@ -138,6 +139,7 @@ export const updateCompetition: RequestHandler<unknown, unknown, UpdateCompetiti
 
     const clubIds = competitionToUpdate.clubs;
     const clubs = await ClubModel.find({ _id: { "$in": clubIds } }).exec();
+
     const addedCompetition = {
       ...competitionToUpdate,
       clubs
