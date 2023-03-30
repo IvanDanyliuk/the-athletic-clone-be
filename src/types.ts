@@ -58,3 +58,13 @@ export interface IPlayersSortData {
   indicator: string,
   order: Order
 }
+
+export interface ISchedulesFilterData {
+  dateFrom?: string,
+  dateTo?: string
+}
+
+export interface ISchedulesSortData {
+  indicator: string,
+  order: Order
+}

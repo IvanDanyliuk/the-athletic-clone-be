@@ -2,8 +2,9 @@ import { ClubType } from '../models/club';
 import { CompetitionType } from '../models/competition';
 import { Material } from '../models/material';
 import { PlayerType } from '../models/player';
+import { ScheduleType } from '../models/schedule';
 import { UserType } from '../models/user';
-import { IClubsFilterData, IClubsSortData, ICompetitionsFilterData, ICompetitionsSortData, IMaterialsFilterData, IMaterialsSortData, IPlayersFilterData, IPlayersSortData, IUserFilterData, IUserSortData, Order } from '../types';
+import { IClubsFilterData, IClubsSortData, ICompetitionsFilterData, ICompetitionsSortData, IMaterialsFilterData, IMaterialsSortData, IPlayersFilterData, IPlayersSortData, ISchedulesFilterData, ISchedulesSortData, IUserFilterData, IUserSortData, Order } from '../types';
 
 
 export const filterMaterials = (materials: Material[], filterData: IMaterialsFilterData) => {
@@ -129,6 +130,51 @@ export const sortPlayers = (players: PlayerType[], sortData: IPlayersSortData) =
       return a[indicator] > b[indicator] ? 1 : -1;
     } else {
       return b[indicator] > a[indicator] ? 1 : -1;
+    }
+  });
+};
+
+export const filterSchedules = (players: ScheduleType[], filterData: ISchedulesFilterData) => {
+  const { dateFrom, dateTo } = filterData;
+
+  return players
+    // .filter(player => club ? player.club == club : true)
+    // .filter(player => country ? player.country == country : true)
+    // .filter(player => position ? player.position == position : true)
+    .filter(player => dateFrom && dateTo ? 
+      Date.parse(player.createdAt.toISOString()) >= Date.parse(dateFrom!) && 
+      Date.parse(player.createdAt.toISOString()) <= Date.parse(dateTo!) 
+      : true
+    );
+};
+
+
+export const sortSchedules = (schedules: ScheduleType[], sortData: ISchedulesSortData) => {
+  const { indicator, order } = sortData;
+
+  return schedules.sort((a: any, b: any) => {
+    if(order === Order.asc) {
+      switch(indicator) {
+        case 'country':
+          return a.competition.country > b.competition.country ? 1 : -1;
+        case 'teamsNumber':
+          return a.competition.clubs.length > b.competition.clubs.length ? 1 : -1;
+        case 'type':
+          return a.competition.type > b.competition.type ? 1 : -1;
+        default:
+          return a[indicator] > b[indicator] ? 1 : -1;
+      }
+    } else {
+      switch(indicator) {
+        case 'country':
+          return b.competition.country > a.competition.country ? 1 : -1;
+        case 'teamsNumber':
+          return b.competition.clubs.length > a.competition.clubs.length ? 1 : -1;
+        case 'type':
+          return b.competition.type > a.competition.type ? 1 : -1;
+        default:
+          return b[indicator] > a[indicator] ? 1 : -1;
+      }
     }
   });
 };

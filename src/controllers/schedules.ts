@@ -5,6 +5,8 @@ import ScheduleModel from '../models/schedule';
 import CompetitionModel from '../models/competition';
 import { CompetitionType } from '../models/competition';
 import { ClubType } from '../models/club';
+import { ISchedulesFilterData, ISchedulesSortData } from '../types';
+import { filterSchedules, sortSchedules } from '../util/helpers';
 
 
 interface CreateScheduleBody {
@@ -25,10 +27,41 @@ interface CreateScheduleBody {
   ]
 }
 
-export const getSchedules: RequestHandler = async (req, res, next) => {
+interface GetAllSchedulesQuery {
+  page: string,
+  itemsPerPage: string,
+  filterData?: ISchedulesFilterData,
+  sortData?: ISchedulesSortData
+}
+
+export const getSchedules: RequestHandler<unknown, unknown, unknown, GetAllSchedulesQuery> = async (req, res, next) => {
+  const { page, itemsPerPage, filterData, sortData } = req.query;
   try {
-    const schedules = await ScheduleModel.find().exec();
-    res.status(200).json(schedules);
+    const data = await ScheduleModel.find().exec();
+
+    let response;
+
+    if(sortData) {
+      response = sortSchedules(data, sortData);
+    }
+
+    if(filterData) {
+      response = filterSchedules(data, filterData);
+    }
+
+    if(filterData && sortData) {
+      const filteredData = filterSchedules(data, filterData);
+      response = sortSchedules(filteredData, sortData);
+    }
+
+    if(!filterData && !sortData) {
+      response = data;
+    }
+
+    res.status(200).json({
+      schedules: response?.slice(+itemsPerPage * +page, +itemsPerPage * (+page + 1)),
+      schedulesCount: response ? response.length : data.length
+    }); 
   } catch (error) {
     next(error);
   }
@@ -60,7 +93,7 @@ export const createSchedule: RequestHandler<unknown, unknown, CreateScheduleBody
     const competition = await CompetitionModel.findById(schedule.competition);
     const modifiedSchedule = {
       ...schedule,
-      competition
+      competition: { ...competition }
     };
 
     const newSchedule = await ScheduleModel.create(modifiedSchedule);
@@ -140,7 +173,7 @@ export const updateSchedule: RequestHandler<UpdateScheduleParams, unknown, Updat
 };
 
 export const deleteSchedule: RequestHandler = async (req, res, next) => {
-  const { id } = req.params;
+  const { id, page, itemsPerPage } = req.query;
 
   try {
     if(!mongoose.isValidObjectId(id)) {
@@ -148,7 +181,13 @@ export const deleteSchedule: RequestHandler = async (req, res, next) => {
     }
 
     await ScheduleModel.findByIdAndDelete(id);
-    res.sendStatus(204);
+
+    const data = await ScheduleModel.find().exec();
+
+    res.status(200).json({
+      schedules: data?.slice(+itemsPerPage! * +page!, +itemsPerPage! * (+page! + 1)),
+      schedulesCount: data.length
+    });
   } catch (error) {
     next(error);
   }
