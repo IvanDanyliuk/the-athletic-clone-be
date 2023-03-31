@@ -5,6 +5,7 @@ const scheduleSchema = new Schema({
   competition: { type: Schema.Types.Mixed, ref: 'Competition' },
   season: { type: String, required: true },
   fixture: [{
+    id: { type: String, required: true },
     matchweekName: { type: String, required: true },
     games: [
       {

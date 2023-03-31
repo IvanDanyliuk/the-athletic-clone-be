@@ -7,7 +7,7 @@ const router = express.Router();
 router.get('/', ScheduleController.getSchedules);
 router.get('/:id', ScheduleController.getSchedule);
 router.post('/', ScheduleController.createSchedule);
-router.patch('/:id', ScheduleController.updateSchedule);
+router.patch('/', ScheduleController.updateSchedule);
 router.delete('/', ScheduleController.deleteSchedule);
 
 export default router;

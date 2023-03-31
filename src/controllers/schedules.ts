@@ -14,6 +14,7 @@ interface CreateScheduleBody {
   season: string,
   fixture: [
     {
+      id: string,
       matchweekName: string,
       games: {
         id: string,
@@ -97,75 +98,48 @@ export const createSchedule: RequestHandler<unknown, unknown, CreateScheduleBody
     };
 
     const newSchedule = await ScheduleModel.create(modifiedSchedule);
+
     res.status(201).json(newSchedule);
   } catch (error) {
     next(error);
   }
 };
 
-interface UpdateScheduleParams {
-  id: string,
-}
-
 interface UpdateScheduleBody {
+  _id: string,
   competition: CompetitionType,
-  tournament: {
-    groupStage: [
-      {
-        groupIndex: string,
-        teams: ClubType[],
-        games: [
-          {
-            home: ClubType,
-            away: ClubType,
-            date: Date,
-            location: string,
-            score: string
-          },
-        ],
-      },
-    ],
-    knockoutStage: [
-      {
-        stageName: string,
-        teams: ClubType[],
-        games: [
-          {
-            home: ClubType,
-            away: ClubType,
-            date: Date,
-            location: string,
-            score: string
-          },
-        ],
-      },
-    ],
-  },
-  league: [
+  season: string,
+  fixture: [
     {
+      id: string,
       matchweekName: string,
-      home: ClubType[],
-      away: ClubType[],
-      date: Date,
-      location: string,
-      score: string
+      games: {
+        id: string,
+        home: ClubType[],
+        away: ClubType[],
+        date: Date,
+        location: string,
+        score: string
+      }[]
     }
   ]
 }
 
-export const updateSchedule: RequestHandler<UpdateScheduleParams, unknown, UpdateScheduleBody, unknown> = async (req, res, next) => {
-  const { id } = req.params;
+export const updateSchedule: RequestHandler<unknown, unknown, UpdateScheduleBody, unknown> = async (req, res, next) => {
   const scheduleToUpdate = req.body;
 
   try {
-    if(!mongoose.isValidObjectId(id)) {
+    if(!mongoose.isValidObjectId(scheduleToUpdate._id)) {
       throw(createHttpError(400, 'Invalid schedule id'));
     }
     if(!scheduleToUpdate.competition) {
       throw createHttpError(400, 'Schedule must have a competition');
     }
+    if(!scheduleToUpdate.season) {
+      throw createHttpError(400, 'Schedule must have a season value');
+    }
 
-    const updatedSchedule = await ScheduleModel.findByIdAndUpdate(id, scheduleToUpdate);
+    const updatedSchedule = await ScheduleModel.findByIdAndUpdate(scheduleToUpdate._id, scheduleToUpdate);
     res.status(200).json(updatedSchedule);
   } catch (error) {
     next(error);
