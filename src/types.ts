@@ -60,6 +60,8 @@ export interface IPlayersSortData {
 }
 
 export interface ISchedulesFilterData {
+  competition?: string,
+  country?: string,
   dateFrom?: string,
   dateTo?: string
 }

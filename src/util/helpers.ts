@@ -134,16 +134,15 @@ export const sortPlayers = (players: PlayerType[], sortData: IPlayersSortData) =
   });
 };
 
-export const filterSchedules = (players: ScheduleType[], filterData: ISchedulesFilterData) => {
-  const { dateFrom, dateTo } = filterData;
+export const filterSchedules = (schedules: ScheduleType[], filterData: ISchedulesFilterData) => {
+  const { competition, country, dateFrom, dateTo } = filterData;
 
-  return players
-    // .filter(player => club ? player.club == club : true)
-    // .filter(player => country ? player.country == country : true)
-    // .filter(player => position ? player.position == position : true)
-    .filter(player => dateFrom && dateTo ? 
-      Date.parse(player.createdAt.toISOString()) >= Date.parse(dateFrom!) && 
-      Date.parse(player.createdAt.toISOString()) <= Date.parse(dateTo!) 
+  return schedules
+    .filter(schedule => country ? schedule.competition.country == country : true)
+    .filter(schedule => competition ? schedule.competition._id == competition : true)
+    .filter(schedule => dateFrom && dateTo ? 
+      Date.parse(schedule.createdAt.toISOString()) >= Date.parse(dateFrom!) && 
+      Date.parse(schedule.createdAt.toISOString()) <= Date.parse(dateTo!) 
       : true
     );
 };
