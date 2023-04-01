@@ -28,14 +28,12 @@ interface CreateMaterialBody {
 }
 
 
-
 interface GetAllMaterialsQuery {
   page: string,
   itemsPerPage: string,
   filterData?: IMaterialsFilterData,
   sortData?: IMaterialsSortData
 }
-
 
 
 export const getMaterials: RequestHandler<unknown, unknown, unknown, GetAllMaterialsQuery> = async (req, res, next) => {

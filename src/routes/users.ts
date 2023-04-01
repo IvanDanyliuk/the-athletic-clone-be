@@ -11,6 +11,7 @@ router.get('/locations', UserController.getUsersLocations);
 router.post('/signup', UserController.signUp);
 router.post('/login', UserController.login);
 router.post('/logout', UserController.logout);
+router.post('/new-user', UserController.createUser);
 router.patch('/', UserController.updateUser);
 router.delete('/', UserController.deleteUser);
 

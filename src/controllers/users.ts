@@ -127,6 +127,67 @@ export const logout: RequestHandler = async (req, res, next) => {
   });
 };
 
+interface CreateUserBody {
+  firstName: string,
+  lastName: string,
+  email: string,
+  password: string,
+  userPhotoUrl?: string,
+  role?: string,
+  location?: string,
+  organization?: string,
+  position?: string
+}
+
+export const createUser: RequestHandler<unknown, unknown, CreateUserBody, unknown> = async (req, res, next) => {
+  const { 
+    firstName, 
+    lastName, 
+    email, 
+    password, 
+    role, 
+    userPhotoUrl, 
+    location, 
+    organization, 
+    position 
+  } = req.body;
+
+  try {
+    if(!firstName || !lastName || !email || !password) {
+      throw(createHttpError('Parameters missing'));
+    }
+
+    const existingUser = await UserModel.findOne({ email: email }).exec();
+
+    if(existingUser) {
+      throw(createHttpError(409, 'User already exists. Provide another email address or log in instead.'));
+    }
+
+    const userRoleValue = !role ? 'reader' : role;
+    const userPhotoUrlValue = !userPhotoUrl ? '' : userPhotoUrl;
+    const userLocationValue = !location ? '' : location;
+    const userOrganizationValue = !organization ? '' : organization;
+    const userPositionValue = !position ? '' : position;
+
+    const passwordHashed = await bcrypt.hash(password, 10);
+    const newUser = await UserModel.create({
+      firstName,
+      lastName,
+      email, 
+      password: passwordHashed,
+      role: userRoleValue, 
+      userPhotoUrl: userPhotoUrlValue, 
+      location: userLocationValue, 
+      organization: userOrganizationValue, 
+      position: userPositionValue
+    });
+
+    res.status(201).json(newUser);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getUsersByRole: RequestHandler = async (req, res, next) => {
   const { role } = req.body;
 
@@ -194,11 +255,7 @@ export const getUsersLocations: RequestHandler = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-}
-
-interface UpdateUserParams {
-  id: string,
-}
+};
 
 interface UpdateUserBody {
   _id: string,
