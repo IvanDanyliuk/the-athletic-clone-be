@@ -195,9 +195,6 @@ export const getUsersByRole: RequestHandler = async (req, res, next) => {
     if(!role) {
       throw(createHttpError(400, 'Provide a role'));
     }
-    // if(role != 'author' || role != 'reader') {
-    //   throw(createHttpError(400, 'Role not exists'));
-    // }
 
     const users = await UserModel.find({ role }).exec();
     res.status(200).json(users);
