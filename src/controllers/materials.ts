@@ -18,11 +18,13 @@ interface CreateMaterialBody {
   title?: string,
   content: string,
   image?: string,
+  status: string,
   views: number,
   likes: number,
+  publicationDate: string | any,
   comments: {
-    author: UserType,
-    text: string
+    user: string,
+    message: string
   }[],
   labels: string[]
 }
@@ -110,11 +112,13 @@ interface UpdateMaterialBody {
   title?: string,
   content: string,
   image?: string,
+  status: string,
   views: number,
   likes: number,
+  publicationDate: string | any,
   comments: {
-    author: UserType,
-    text: string
+    user: string,
+    message: string
   }[],
   labels: string[]
 }
