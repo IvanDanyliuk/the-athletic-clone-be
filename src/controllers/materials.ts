@@ -2,7 +2,6 @@ import { RequestHandler } from 'express';
 import mongoose from 'mongoose';
 import createHttpError from 'http-errors';
 import MaterialModel from '../models/material';
-import { UserType } from '../models/user';
 import { IMaterialsFilterData, IMaterialsSortData } from '../types';
 import { filterMaterials, sortMaterials } from '../util/helpers';
 

@@ -1,13 +1,13 @@
 import { ClubType } from '../models/club';
 import { CompetitionType } from '../models/competition';
-import { Material } from '../models/material';
+import { MaterialType } from '../models/material';
 import { PlayerType } from '../models/player';
 import { ScheduleType } from '../models/schedule';
 import { UserType } from '../models/user';
 import { IClubsFilterData, IClubsSortData, ICompetitionsFilterData, ICompetitionsSortData, IMaterialsFilterData, IMaterialsSortData, IPlayersFilterData, IPlayersSortData, ISchedulesFilterData, ISchedulesSortData, IUserFilterData, IUserSortData, Order } from '../types';
 
 
-export const filterMaterials = (materials: Material[], filterData: IMaterialsFilterData) => {
+export const filterMaterials = (materials: MaterialType[], filterData: IMaterialsFilterData) => {
   const { author, type, dateFrom, dateTo } = filterData;
 
   return materials
@@ -21,7 +21,7 @@ export const filterMaterials = (materials: Material[], filterData: IMaterialsFil
 };
 
 
-export const sortMaterials = (materials: Material[], sortData: IMaterialsSortData) => {
+export const sortMaterials = (materials: MaterialType[], sortData: IMaterialsSortData) => {
   const { indicator, order } = sortData;
 
   return materials.sort((a: any, b: any) => {
