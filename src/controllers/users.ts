@@ -189,8 +189,8 @@ export const createUser: RequestHandler<unknown, unknown, CreateUserBody, unknow
 };
 
 export const getUsersByRole: RequestHandler = async (req, res, next) => {
-  const { role } = req.body;
-
+  const { role } = req.query;
+  
   try {
     if(!role) {
       throw(createHttpError(400, 'Provide a role'));
