@@ -11,6 +11,7 @@ import competitionRoutes from './routes/competitions';
 import playerRoutes from './routes/players';
 import scheduleRoutes from './routes/schedules';
 import userRoutes from './routes/users';
+import contentRoutes from './routes/content';
 import env from './util/validateEnv';
 
 
@@ -44,6 +45,7 @@ app.use('/competitions', competitionRoutes);
 app.use('/players', playerRoutes);
 app.use('/schedules', scheduleRoutes);
 app.use('/users', userRoutes);
+app.use('/content', contentRoutes);
 
 app.use((req, res, next) => {
   next(createHttpError(404, 'Endpoint not found'));
