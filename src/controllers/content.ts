@@ -2,6 +2,7 @@ import { RequestHandler } from 'express';
 import mongoose from 'mongoose';
 import createHttpError from 'http-errors';
 import ContentSectionModel from '../models/content';
+import MaterialModel from '../models/material';
 import { MaterialType } from '../models/material';
 
 
@@ -20,7 +21,7 @@ interface UpdateContentSectionBody {
 
 export const getContentSections: RequestHandler = async (req, res, next) => {
   try {
-    const contentSections = await ContentSectionModel.find().exec();
+    const contentSections = await ContentSectionModel.find().populate('materials').exec();
     res.status(200).json(contentSections);
   } catch (error) {
     next(error);
@@ -28,16 +29,16 @@ export const getContentSections: RequestHandler = async (req, res, next) => {
 };
 
 export const createContentSection: RequestHandler<unknown, unknown, CreateContentSectionBody, unknown> = async (req, res, next) => {
-  const contentLabel = req.body;
+  const contentSection = req.body;
   try {
-    if(!contentLabel.name) {
+    if(!contentSection.name) {
       throw createHttpError(400, 'Content Label must have a name');
     }
-    if(!contentLabel.maxLength) {
+    if(!contentSection.maxLength) {
       throw createHttpError(400, 'Content Label must have a max length');
     }
-    const newContentLabel = await ContentSectionModel.create(contentLabel);
-    res.status(201).json(newContentLabel);
+    const newContentSection = await ContentSectionModel.create(contentSection);
+    res.status(201).json(newContentSection);
   } catch (error) {
     next(error);
   }

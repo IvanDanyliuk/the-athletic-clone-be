@@ -10,4 +10,4 @@ const contentSectionSchema = new Schema({
 
 export type ContentSectionType = InferSchemaType<typeof contentSectionSchema>;
 
-export default model<ContentSectionType>('ContentLabel', contentSectionSchema);
+export default model<ContentSectionType>('ContentSections', contentSectionSchema);
