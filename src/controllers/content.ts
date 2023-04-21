@@ -38,7 +38,8 @@ export const createContentSection: RequestHandler<unknown, unknown, CreateConten
       throw createHttpError(400, 'Content Label must have a max length');
     }
     const newContentSection = await ContentSectionModel.create(contentSection);
-    res.status(201).json(newContentSection);
+    const response = await newContentSection.populate('materials');
+    res.status(201).json(response);
   } catch (error) {
     next(error);
   }
@@ -53,8 +54,9 @@ export const updateContentSection: RequestHandler<unknown, unknown, UpdateConten
     if(!sectionContentToUpdate.name) {
       throw createHttpError(400, 'Section must have a name');
     }
-    const updatedSectionContent = await ContentSectionModel.findByIdAndUpdate(sectionContentToUpdate._id, sectionContentToUpdate);
-    res.status(200).json(updatedSectionContent);
+    await ContentSectionModel.findByIdAndUpdate(sectionContentToUpdate._id, sectionContentToUpdate);
+    const contentSections = await ContentSectionModel.find().populate('materials').exec();
+    res.status(200).json(contentSections);
   } catch (error) {
     next(error);
   }
