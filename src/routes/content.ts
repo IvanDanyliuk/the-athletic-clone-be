@@ -1,11 +1,12 @@
 import express from 'express';
-import * as ContentLabelsController from '../controllers/content';
+import * as ContentSectionsController from '../controllers/content';
 
 
 const router = express.Router();
 
-router.get('/', ContentLabelsController.getContentSections);
-router.post('/', ContentLabelsController.createContentSection);
-router.patch('/', ContentLabelsController.updateContentSection);
+router.get('/', ContentSectionsController.getContentSections);
+router.post('/', ContentSectionsController.createContentSection);
+router.patch('/', ContentSectionsController.updateContentSection);
+router.delete('/', ContentSectionsController.deleteContentSection);
 
 export default router;

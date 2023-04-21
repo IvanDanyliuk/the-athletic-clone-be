@@ -61,3 +61,16 @@ export const updateContentSection: RequestHandler<unknown, unknown, UpdateConten
     next(error);
   }
 };
+
+export const deleteContentSection: RequestHandler = async (req, res, next) => {
+  const { id } = req.query;
+  try {
+    if(!mongoose.isValidObjectId(id)) {
+      throw(createHttpError(400, 'Invalid content section id'));
+    }
+    await ContentSectionModel.findByIdAndDelete(id);
+    res.sendStatus(204);
+  } catch (error) {
+    next(error);
+  }
+};
