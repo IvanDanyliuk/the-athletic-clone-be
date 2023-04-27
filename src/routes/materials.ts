@@ -9,7 +9,7 @@ router.get('/articles', MaterialsController.getMaterials);
 router.get('/notes', MaterialsController.getMaterials);
 router.get('/real-time-posts', MaterialsController.getMaterials);
 router.get('/recent', MaterialsController.getRecentMaterials);
-router.get('/popular', MaterialsController.getPopularMaterials);
+router.get('/homepage', MaterialsController.getHomepageSecondaryMaterials);
 router.get('/:id', MaterialsController.getMaterial);
 router.post('/', MaterialsController.createMaterial);
 router.patch('/', MaterialsController.updateMaterial);

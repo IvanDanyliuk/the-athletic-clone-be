@@ -2,6 +2,7 @@ import { RequestHandler } from 'express';
 import mongoose from 'mongoose';
 import createHttpError from 'http-errors';
 import MaterialModel from '../models/material';
+import CompetitionModel from '../models/competition';
 import { IMaterialsFilterData, IMaterialsSortData } from '../types';
 import { filterMaterials, sortMaterials } from '../util/helpers';
 
@@ -106,21 +107,45 @@ export const getRecentMaterials: RequestHandler<unknown, unknown, unknown, GetRe
 };
 
 interface GetPopularMaterialsQuery {
-  materialsNumber: number,
-  materialTypes: string[]
+  topMaterialsNum: number,
+  postsNum: number,
 }
 
-export const getPopularMaterials: RequestHandler<unknown, unknown, unknown, GetPopularMaterialsQuery> = async (req, res, next) => {
-  const { materialsNumber, materialTypes } = req.query;
+export const getHomepageSecondaryMaterials: RequestHandler<unknown, unknown, unknown, GetPopularMaterialsQuery> = async (req, res, next) => {
+  const { topMaterialsNum, postsNum } = req.query;
   try {
-    const materials = await MaterialModel.find({ type: { $in: materialTypes } }).exec();
-    const sortedMaterials = materials.sort((a, b) => b.views - a.views);
-    const response = sortedMaterials.slice(0 , materialsNumber);
-    res.status(200).json(response);
+    const topMaterials = await MaterialModel
+      .find({ type: { $in: ['article', 'note'] } })
+      .sort({ likes: -1 }).exec();
+
+    const latestPosts = await MaterialModel
+      .find({ type: { $in: ['post'] } })
+      .sort({ createdAt: -1 }).exec();
+
+    const availableLeagues = await CompetitionModel.find().exec();
+    const leagues = availableLeagues.map(league => league.fullName);
+    const totalLeagueMaterials = await MaterialModel
+      .find({ 
+        $and: [
+          { type: { $in: ['article', 'note'] } },
+          { labels: { $in: leagues } }
+        ]
+       });
+    const leagueMaterials = leagues.map(leagueName => ({
+      league: leagueName,
+      logo: availableLeagues.find(item => item.fullName === leagueName)?.logoUrl,
+      materials: totalLeagueMaterials.filter(material => material.labels.includes(leagueName))
+    }));
+    
+    res.status(200).json({
+      topMaterials: topMaterials.slice(0, topMaterialsNum),
+      latestPosts: latestPosts.slice(0, postsNum),
+      leagueMaterials
+    });
   } catch (error) {
     next(error);
   }
-}
+};
 
 export const createMaterial: RequestHandler<unknown, unknown, CreateMaterialBody, unknown> = async (req, res, next) => {
   const material = req.body;
