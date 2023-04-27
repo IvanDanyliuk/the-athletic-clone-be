@@ -16,6 +16,7 @@ interface CreateMaterialBody {
   type: string,
   title?: string,
   content: string,
+  preview?: string,
   image?: string,
   status: string,
   views: number,
@@ -28,12 +29,16 @@ interface CreateMaterialBody {
   labels: string[]
 }
 
-
 interface GetAllMaterialsQuery {
   page: string,
   itemsPerPage: string,
   filterData?: IMaterialsFilterData,
   sortData?: IMaterialsSortData
+}
+
+interface GetRecentMaterialsQuery {
+  materialsNumber: number,
+  materialTypes: string[]
 }
 
 
@@ -86,6 +91,37 @@ export const getMaterial: RequestHandler = async (req, res, next) => {
   }
 };
 
+export const getRecentMaterials: RequestHandler<unknown, unknown, unknown, GetRecentMaterialsQuery> = async (req, res, next) => {
+  const { materialsNumber, materialTypes } = req.query;
+  try {
+    const materials = await MaterialModel.find({ type: { $in: materialTypes } }).exec();
+    if(!materials) {
+      throw(createHttpError(400, 'Materials not found'));
+    }
+    const recentMaterials = materials.reverse().slice(0, materialsNumber);
+    res.status(200).json(recentMaterials);
+  } catch (error) {
+    next(error)
+  }
+};
+
+interface GetPopularMaterialsQuery {
+  materialsNumber: number,
+  materialTypes: string[]
+}
+
+export const getPopularMaterials: RequestHandler<unknown, unknown, unknown, GetPopularMaterialsQuery> = async (req, res, next) => {
+  const { materialsNumber, materialTypes } = req.query;
+  try {
+    const materials = await MaterialModel.find({ type: { $in: materialTypes } }).exec();
+    const sortedMaterials = materials.sort((a, b) => b.views - a.views);
+    const response = sortedMaterials.slice(0 , materialsNumber);
+    res.status(200).json(response);
+  } catch (error) {
+    next(error);
+  }
+}
+
 export const createMaterial: RequestHandler<unknown, unknown, CreateMaterialBody, unknown> = async (req, res, next) => {
   const material = req.body;
   try {
@@ -110,6 +146,7 @@ interface UpdateMaterialBody {
   type: string,
   title?: string,
   content: string,
+  preview?: string,
   image?: string,
   status: string,
   views: number,
