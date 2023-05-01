@@ -19,6 +19,7 @@ interface CreateMaterialBody {
   content: string,
   preview?: string,
   image?: string,
+  isMain?: boolean,
   status: string,
   views: number,
   likes: number,
@@ -131,12 +132,15 @@ export const getHomepageSecondaryMaterials: RequestHandler<unknown, unknown, unk
           { labels: { $in: leagues } }
         ]
        });
-    const leagueMaterials = leagues.map(leagueName => ({
-      league: leagueName,
-      logo: availableLeagues.find(item => item.fullName === leagueName)?.logoUrl,
-      materials: totalLeagueMaterials.filter(material => material.labels.includes(leagueName))
-    }));
-    
+    const leagueMaterials = leagues
+      .map(leagueName => ({
+        league: leagueName,
+        logo: availableLeagues.find(item => item.fullName === leagueName)?.logoUrl,
+        materials: totalLeagueMaterials.filter(material => material.labels.includes(leagueName))
+      }))
+      .filter(league => league.materials.length > 0)
+      .sort((a, b) => b.materials.length - a.materials.length);
+
     res.status(200).json({
       topMaterials: topMaterials.slice(0, topMaterialsNum),
       latestPosts: latestPosts.slice(0, postsNum),
@@ -153,6 +157,14 @@ export const createMaterial: RequestHandler<unknown, unknown, CreateMaterialBody
     if(!material.content) {
       throw createHttpError(400, 'Material must have a text');
     }
+    
+    if(material.isMain) {
+      const mainMaterial = await MaterialModel.find({ isMain: true }).exec();
+      if(mainMaterial) {
+        await MaterialModel.findByIdAndUpdate(mainMaterial, { ...mainMaterial, isMain: false });
+      }
+    }
+
     const newMaterial = await MaterialModel.create(material);
     res.status(201).json(newMaterial);
   } catch (error) {
@@ -173,6 +185,7 @@ interface UpdateMaterialBody {
   content: string,
   preview?: string,
   image?: string,
+  isMain?: boolean,
   status: string,
   views: number,
   likes: number,
@@ -194,6 +207,13 @@ export const updateMaterial: RequestHandler<unknown, unknown, UpdateMaterialBody
 
     if(!materialToUpdate.content) {
       throw createHttpError(400, 'Material must have a text');
+    }
+
+    if(materialToUpdate.isMain) {
+      const mainMaterial = await MaterialModel.find({ isMain: true }).exec();
+      if(mainMaterial) {
+        await MaterialModel.findByIdAndUpdate(mainMaterial, { ...mainMaterial, isMain: false });
+      }
     }
 
     const updatedMaterial = await MaterialModel.findByIdAndUpdate(materialToUpdate._id, materialToUpdate);

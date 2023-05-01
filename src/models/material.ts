@@ -13,6 +13,7 @@ const materialSchema = new Schema({
   content: { type: String, required: true },
   preview: { type: String },
   image: { type: String },
+  isMain: { type: Boolean },
   status: { type: String, required: true },
   publicationDate: { type: String, required: true },
   views: { type: Number, required: true },
