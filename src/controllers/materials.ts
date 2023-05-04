@@ -107,12 +107,12 @@ export const getRecentMaterials: RequestHandler<unknown, unknown, unknown, GetRe
   }
 };
 
-interface GetPopularMaterialsQuery {
+interface GetSecondaryMaterialsQuery {
   topMaterialsNum: number,
   postsNum: number,
 }
 
-export const getHomepageSecondaryMaterials: RequestHandler<unknown, unknown, unknown, GetPopularMaterialsQuery> = async (req, res, next) => {
+export const getHomepageSecondaryMaterials: RequestHandler<unknown, unknown, unknown, GetSecondaryMaterialsQuery> = async (req, res, next) => {
   const { topMaterialsNum, postsNum } = req.query;
   try {
     const topMaterials = await MaterialModel
@@ -122,6 +122,8 @@ export const getHomepageSecondaryMaterials: RequestHandler<unknown, unknown, unk
     const latestPosts = await MaterialModel
       .find({ type: { $in: ['post'] } })
       .sort({ createdAt: -1 }).exec();
+
+    const mustReadArticle = await MaterialModel.findOne({ isMain: true });
 
     const availableLeagues = await CompetitionModel.find().exec();
     const leagues = availableLeagues.map(league => league.fullName);
@@ -144,6 +146,7 @@ export const getHomepageSecondaryMaterials: RequestHandler<unknown, unknown, unk
     res.status(200).json({
       topMaterials: topMaterials.slice(0, topMaterialsNum),
       latestPosts: latestPosts.slice(0, postsNum),
+      mustRead: mustReadArticle,
       leagueMaterials
     });
   } catch (error) {

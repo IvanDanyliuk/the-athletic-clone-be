@@ -18,10 +18,10 @@ const materialSchema = new Schema({
   publicationDate: { type: String, required: true },
   views: { type: Number, required: true },
   likes: { type: Number, required: true },
-  comments: {
+  comments: [{
     user: { type: String }, 
     message: { type: String }
-  },
+  }],
   labels: { type: [String], required: true },
 }, {
   timestamps: true
