@@ -59,10 +59,14 @@ export const getSchedules: RequestHandler<unknown, unknown, unknown, GetAllSched
       response = data;
     }
 
-    res.status(200).json({
-      schedules: response?.slice(+itemsPerPage * +page, +itemsPerPage * (+page + 1)),
-      schedulesCount: response ? response.length : data.length
-    }); 
+    if(page && itemsPerPage) {
+      res.status(200).json({
+        schedules: response?.slice(+itemsPerPage * +page, +itemsPerPage * (+page + 1)),
+        schedulesCount: response ? response.length : data.length
+      }); 
+    } else {
+      res.status(200).json(data); 
+    }
   } catch (error) {
     next(error);
   }

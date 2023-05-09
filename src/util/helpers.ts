@@ -135,11 +135,12 @@ export const sortPlayers = (players: PlayerType[], sortData: IPlayersSortData) =
 };
 
 export const filterSchedules = (schedules: ScheduleType[], filterData: ISchedulesFilterData) => {
-  const { competition, country, dateFrom, dateTo } = filterData;
+  const { competition, country, season, dateFrom, dateTo } = filterData;
 
   return schedules
     .filter(schedule => country ? schedule.competition.country == country : true)
     .filter(schedule => competition ? schedule.competition._id == competition : true)
+    .filter(schedule => season ? schedule.season === season : true)
     .filter(schedule => dateFrom && dateTo ? 
       Date.parse(schedule.createdAt.toISOString()) >= Date.parse(dateFrom!) && 
       Date.parse(schedule.createdAt.toISOString()) <= Date.parse(dateTo!) 

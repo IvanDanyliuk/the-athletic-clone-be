@@ -2,7 +2,6 @@ import { RequestHandler } from 'express';
 import mongoose from 'mongoose';
 import createHttpError from 'http-errors';
 import ContentSectionModel from '../models/content';
-import MaterialModel from '../models/material';
 import { MaterialType } from '../models/material';
 
 
