@@ -16,6 +16,7 @@ interface CreateScheduleBody {
     {
       id: string,
       matchweekName: string,
+      basicDate: string,
       games: {
         id: string,
         home: ClubType[],
@@ -117,6 +118,7 @@ interface UpdateScheduleBody {
     {
       id: string,
       matchweekName: string,
+      basicDate: string, 
       games: {
         id: string,
         home: ClubType[],

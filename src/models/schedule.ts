@@ -7,8 +7,7 @@ const scheduleSchema = new Schema({
   fixture: [{
     id: { type: String, required: true },
     matchweekName: { type: String, required: true },
-    dateStart: { type: String, required: true },
-    dateEnd: { type: String, required: true },
+    basicDate: { type: String, required: true },
     games: [
       {
         id: { type: String }, 
