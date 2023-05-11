@@ -39,7 +39,9 @@ interface GetAllSchedulesQuery {
 export const getSchedules: RequestHandler<unknown, unknown, unknown, GetAllSchedulesQuery> = async (req, res, next) => {
   const { page, itemsPerPage, filterData, sortData } = req.query;
   try {
-    const data = await ScheduleModel.find().exec();
+    const data = await ScheduleModel.find().populate('fixture.games.home').populate('fixture.games.away').exec();
+
+    console.log(data)
 
     let response;
 

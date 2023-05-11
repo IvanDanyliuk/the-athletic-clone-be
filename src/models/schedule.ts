@@ -11,8 +11,8 @@ const scheduleSchema = new Schema({
     games: [
       {
         id: { type: String }, 
-        home: { type: Schema.Types.Mixed, ref: 'Club' },
-        away: { type: Schema.Types.Mixed, ref: 'Club' },
+        home: { type: Schema.Types.ObjectId, ref: 'Club' },
+        away: { type: Schema.Types.ObjectId, ref: 'Club' },
         date: { type: Date, required: true },
         location: { type: String, required: true },
         score: { type: String }

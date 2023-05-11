@@ -121,7 +121,7 @@ interface UpdateClubBody {
 
 export const updateClub: RequestHandler<unknown, unknown, UpdateClubBody, unknown> = async (req, res, next) => {
   const clubToUpdate = req.body;
-
+  console.log(clubToUpdate)
   try {
     if(!mongoose.isValidObjectId(clubToUpdate._id)) {
       throw(createHttpError(400, 'Invalid club id'));
