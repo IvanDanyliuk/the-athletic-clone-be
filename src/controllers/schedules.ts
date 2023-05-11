@@ -39,9 +39,12 @@ interface GetAllSchedulesQuery {
 export const getSchedules: RequestHandler<unknown, unknown, unknown, GetAllSchedulesQuery> = async (req, res, next) => {
   const { page, itemsPerPage, filterData, sortData } = req.query;
   try {
-    const data = await ScheduleModel.find().populate('fixture.games.home').populate('fixture.games.away').exec();
-
-    console.log(data)
+    const data = await ScheduleModel
+      .find()
+      .populate([{ path: 'competition', populate: { path: 'clubs' } }])
+      .populate('fixture.games.home')
+      .populate('fixture.games.away')
+      .exec();
 
     let response;
 
@@ -98,7 +101,7 @@ export const createSchedule: RequestHandler<unknown, unknown, CreateScheduleBody
       throw createHttpError(400, 'Schedule must have a competition');
     }
 
-    const competition = await CompetitionModel.findById(schedule.competition);
+    const competition = await CompetitionModel.findById(schedule.competition).populate('clubs');
     const modifiedSchedule = {
       ...schedule,
       competition: { ...competition }

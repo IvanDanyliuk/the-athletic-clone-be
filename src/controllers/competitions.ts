@@ -12,7 +12,7 @@ interface CreateCompetitionBody {
   fullName: string,
   shortName: string,
   country: string,
-  clubs: string[],
+  clubs: ClubType[],
   logoUrl: string,
   type: string,
 }
@@ -27,7 +27,7 @@ interface GetAllCompetitionsQuery {
 export const getCompetitions: RequestHandler<unknown, unknown, unknown, GetAllCompetitionsQuery> = async (req, res, next) => {
   const { page, itemsPerPage, filterData, sortData } = req.query;
   try {
-    const data = await CompetitionModel.find().exec();
+    const data = await CompetitionModel.find().populate('clubs').exec();
 
     let response;
 
@@ -59,7 +59,7 @@ export const getCompetitions: RequestHandler<unknown, unknown, unknown, GetAllCo
 
 export const getAllCompetitions: RequestHandler = async (req, res, next) => {
   try {
-    const competitions = await CompetitionModel.find().exec();
+    const competitions = await CompetitionModel.find().populate('clubs').exec();
     
     res.status(200).json({
       competitions,
@@ -77,7 +77,7 @@ export const getCompetition: RequestHandler = async (req, res, next) => {
     if(!mongoose.isValidObjectId(id)) {
       throw(createHttpError(400, 'Invalid competition id'));
     }
-    const competition = await CompetitionModel.findById(id);
+    const competition = await CompetitionModel.findById(id).populate('clubs');
     if(!competition) {
       createHttpError(404, 'Competition not found');
     }
@@ -145,7 +145,7 @@ export const updateCompetition: RequestHandler<unknown, unknown, UpdateCompetiti
       clubs
     };
 
-    const updatedCompetition = await CompetitionModel.findByIdAndUpdate(competitionToUpdate._id, addedCompetition);
+    const updatedCompetition = await CompetitionModel.findByIdAndUpdate(competitionToUpdate._id, addedCompetition).populate('clubs');
     
     res.status(200).json(updatedCompetition);
   } catch (error) {

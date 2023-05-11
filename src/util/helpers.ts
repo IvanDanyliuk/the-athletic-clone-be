@@ -86,19 +86,19 @@ export const sortClubs = (clubs: ClubType[], sortData: IClubsSortData) => {
   });
 };
 
-export const filterCompetitions = (clubs: CompetitionType[], filterData: ICompetitionsFilterData) => {
+export const filterCompetitions = (competitions: CompetitionType[], filterData: ICompetitionsFilterData) => {
   const { country, type } = filterData;
 
-  return clubs
-    .filter(clubs => country ? clubs.country == country : true)
-    .filter(clubs => type ? clubs.type == type : true);
+  return competitions
+    .filter(competition => country ? competition.country == country : true)
+    .filter(competition => type ? competition.type == type : true);
 };
 
 
-export const sortCompetitions = (clubs: CompetitionType[], sortData: ICompetitionsSortData) => {
+export const sortCompetitions = (competitions: CompetitionType[], sortData: ICompetitionsSortData) => {
   const { indicator, order } = sortData;
 
-  return clubs.sort((a: any, b: any) => {
+  return competitions.sort((a: any, b: any) => {
     if(order === Order.asc) {
       return a[indicator] > b[indicator] ? 1 : -1;
     } else {
