@@ -41,6 +41,7 @@ export const getSchedules: RequestHandler<unknown, unknown, unknown, GetAllSched
   try {
     const data = await ScheduleModel
       .find()
+      .sort({ createdAt: -1 })
       .populate([{ path: 'competition', populate: { path: 'clubs' } }])
       .populate('fixture.games.home')
       .populate('fixture.games.away')
@@ -167,7 +168,7 @@ export const deleteSchedule: RequestHandler = async (req, res, next) => {
 
     await ScheduleModel.findByIdAndDelete(id);
 
-    const data = await ScheduleModel.find().exec();
+    const data = await ScheduleModel.find().sort({ createdAt: -1 }).exec();
 
     res.status(200).json({
       schedules: data?.slice(+itemsPerPage! * +page!, +itemsPerPage! * (+page! + 1)),

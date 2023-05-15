@@ -29,7 +29,7 @@ export const getPlayers: RequestHandler<unknown, unknown, unknown, GetAllPlayers
   const { page, itemsPerPage, filterData, sortData } = req.query;
 
   try {
-    const data = await PlayerModel.find().exec();
+    const data = await PlayerModel.find().sort({ createdAt: -1 }).exec();
 
     let response;
 
@@ -145,7 +145,7 @@ export const deletePlayer: RequestHandler = async (req, res, next) => {
 
     await PlayerModel.findByIdAndDelete(id);
     
-    const data = await PlayerModel.find().exec();
+    const data = await PlayerModel.find().sort({ createdAt: -1 }).exec();
 
     res.status(200).json({
       players: data?.slice(+itemsPerPage! * +page!, +itemsPerPage! * (+page! + 1)),

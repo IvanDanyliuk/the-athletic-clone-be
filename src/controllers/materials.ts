@@ -47,7 +47,7 @@ interface GetRecentMaterialsQuery {
 export const getMaterials: RequestHandler<unknown, unknown, unknown, GetAllMaterialsQuery> = async (req, res, next) => {
   const { page, itemsPerPage, filterData, sortData } = req.query;
   try {
-    const data = await MaterialModel.find().exec();
+    const data = await MaterialModel.find().sort({ createdAt: -1 }).exec();
 
     let response;
 
@@ -96,11 +96,11 @@ export const getMaterial: RequestHandler = async (req, res, next) => {
 export const getRecentMaterials: RequestHandler<unknown, unknown, unknown, GetRecentMaterialsQuery> = async (req, res, next) => {
   const { materialsNumber, materialTypes } = req.query;
   try {
-    const materials = await MaterialModel.find({ type: { $in: materialTypes } }).exec();
+    const materials = await MaterialModel.find({ type: { $in: materialTypes } }).sort({ createdAt: -1 }).exec();
     if(!materials) {
       throw(createHttpError(400, 'Materials not found'));
     }
-    const recentMaterials = materials.reverse().slice(0, materialsNumber);
+    const recentMaterials = materials.slice(0, materialsNumber);
     res.status(200).json(recentMaterials);
   } catch (error) {
     next(error)
@@ -117,11 +117,13 @@ export const getHomepageSecondaryMaterials: RequestHandler<unknown, unknown, unk
   try {
     const topMaterials = await MaterialModel
       .find({ type: { $in: ['article', 'note'] } })
-      .sort({ likes: -1 }).exec();
+      .sort({ likes: -1 })
+      .exec();
 
     const latestPosts = await MaterialModel
       .find({ type: { $in: ['post'] } })
-      .sort({ createdAt: -1 }).exec();
+      .sort({ createdAt: -1 })
+      .exec();
 
     const mustReadArticle = await MaterialModel.findOne({ isMain: true });
 
@@ -235,7 +237,7 @@ export const deleteMaterial: RequestHandler = async (req, res, next) => {
     }
 
     await MaterialModel.findByIdAndDelete(id);
-    const data = await MaterialModel.find().exec();
+    const data = await MaterialModel.find().sort({ createdAt: -1 }).exec();
 
     res.status(200).json({
       materials: data?.slice(+itemsPerPage! * +page!, +itemsPerPage! * (+page! + 1)),

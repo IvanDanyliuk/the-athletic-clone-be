@@ -196,7 +196,7 @@ export const getUsersByRole: RequestHandler = async (req, res, next) => {
       throw(createHttpError(400, 'Provide a role'));
     }
 
-    const users = await UserModel.find({ role }).exec();
+    const users = await UserModel.find({ role }).sort({ createdAt: -1 }).exec();
     res.status(200).json(users);
   } catch (error) {
     next(error);
@@ -213,7 +213,7 @@ interface GetAllUsersQuery {
 export const getAllUsers: RequestHandler<unknown, unknown, unknown, GetAllUsersQuery> = async (req, res, next) => {
   const { page, itemsPerPage, filterData, sortData } = req.query;
   try {
-    const data = await UserModel.find().exec();
+    const data = await UserModel.find().sort({ createdAt: -1 }).exec();
 
     let response;
 
@@ -295,7 +295,7 @@ export const deleteUser: RequestHandler = async (req, res, next) => {
     }
 
     await UserModel.findByIdAndDelete(id);
-    const data = await UserModel.find().exec();
+    const data = await UserModel.find().sort({ createdAt: -1 }).exec();
 
     res.status(200).json({
       users: data?.slice(+itemsPerPage! * +page!, +itemsPerPage! * (+page! + 1)),

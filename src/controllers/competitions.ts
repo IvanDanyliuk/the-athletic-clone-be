@@ -27,7 +27,7 @@ interface GetAllCompetitionsQuery {
 export const getCompetitions: RequestHandler<unknown, unknown, unknown, GetAllCompetitionsQuery> = async (req, res, next) => {
   const { page, itemsPerPage, filterData, sortData } = req.query;
   try {
-    const data = await CompetitionModel.find().populate('clubs').exec();
+    const data = await CompetitionModel.find().sort({ createdAt: -1 }).populate('clubs').exec();
 
     let response;
 
@@ -59,7 +59,7 @@ export const getCompetitions: RequestHandler<unknown, unknown, unknown, GetAllCo
 
 export const getAllCompetitions: RequestHandler = async (req, res, next) => {
   try {
-    const competitions = await CompetitionModel.find().populate('clubs').exec();
+    const competitions = await CompetitionModel.find().sort({ createdAt: -1 }).populate('clubs').exec();
     
     res.status(200).json({
       competitions,
@@ -163,7 +163,7 @@ export const deleteCompetition: RequestHandler = async (req, res, next) => {
 
     await CompetitionModel.findByIdAndDelete(id);
 
-    const data = await CompetitionModel.find().exec();
+    const data = await CompetitionModel.find().sort({ createdAt: -1 }).exec();
 
     res.status(200).json({
       competitions: data?.slice(+itemsPerPage! * +page!, +itemsPerPage! * (+page! + 1)),

@@ -20,7 +20,7 @@ interface UpdateContentSectionBody {
 
 export const getContentSections: RequestHandler = async (req, res, next) => {
   try {
-    const contentSections = await ContentSectionModel.find().populate('materials').exec();
+    const contentSections = await ContentSectionModel.find().sort({ createdAt: -1 }).populate('materials').exec();
     res.status(200).json(contentSections);
   } catch (error) {
     next(error);
@@ -54,7 +54,7 @@ export const updateContentSection: RequestHandler<unknown, unknown, UpdateConten
       throw createHttpError(400, 'Section must have a name');
     }
     await ContentSectionModel.findByIdAndUpdate(sectionContentToUpdate._id, sectionContentToUpdate);
-    const contentSections = await ContentSectionModel.find().populate('materials').exec();
+    const contentSections = await ContentSectionModel.find().sort({ createdAt: -1 }).populate('materials').exec();
     res.status(200).json(contentSections);
   } catch (error) {
     next(error);

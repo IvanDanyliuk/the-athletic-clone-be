@@ -25,7 +25,7 @@ interface GetAllClubsQuery {
 export const getClubs: RequestHandler<unknown, unknown, unknown, GetAllClubsQuery> = async (req, res, next) => {
   const { page, itemsPerPage, filterData, sortData } = req.query;
   try {
-    const data = await ClubModel.find().exec();
+    const data = await ClubModel.find().sort({ createdAt: -1 }).exec();
 
     let response;
 
@@ -59,8 +59,8 @@ export const getClubsByCountry: RequestHandler = async (req, res, next) => {
   const { country } = req.query;
   try {
     const clubs = country !== 'International' ? 
-      await ClubModel.find({ country }).exec() : 
-      await ClubModel.find().exec();
+      await ClubModel.find({ country }).sort({ createdAt: -1 }).exec() : 
+      await ClubModel.find().sort({ createdAt: -1 }).exec();
     if(!clubs) {
       throw(createHttpError(404, 'Clubs not found'));
     }
@@ -148,7 +148,7 @@ export const deleteClub: RequestHandler = async (req, res, next) => {
     }
 
     await ClubModel.findByIdAndDelete(id);
-    const data = await ClubModel.find().exec();
+    const data = await ClubModel.find().sort({ createdAt: -1 }).exec();
 
     res.status(200).json({
       clubs: data?.slice(+itemsPerPage! * +page!, +itemsPerPage! * (+page! + 1)),
