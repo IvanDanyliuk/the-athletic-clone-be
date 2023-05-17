@@ -22,7 +22,7 @@ interface CreateMaterialBody {
   isMain?: boolean,
   status: string,
   views: number,
-  likes: number,
+  likes: string[],
   publicationDate: string | any,
   comments: {
     user: string,
@@ -193,7 +193,7 @@ interface UpdateMaterialBody {
   isMain?: boolean,
   status: string,
   views: number,
-  likes: number,
+  likes: string[],
   publicationDate: string | any,
   comments: {
     user: string,

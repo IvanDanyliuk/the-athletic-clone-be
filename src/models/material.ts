@@ -17,7 +17,7 @@ const materialSchema = new Schema({
   status: { type: String, required: true },
   publicationDate: { type: String, required: true },
   views: { type: Number, required: true },
-  likes: { type: Number, required: true },
+  likes: [{ type: String }],
   comments: [{
     user: { type: String }, 
     message: { type: String }
