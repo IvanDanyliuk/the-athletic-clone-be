@@ -179,45 +179,6 @@ export const createMaterial: RequestHandler<unknown, unknown, CreateMaterialBody
   }
 };
 
-interface LikeMaterialRequest {
-  userId: string,
-  materialId: string
-}
-
-export const likeMaterial: RequestHandler<unknown, unknown, LikeMaterialRequest, unknown> = async (req, res, next) => {
-  const { userId, materialId } = req.body;
-
-  try {
-    const material = await MaterialModel.findById(materialId).lean().exec();
-
-    if(!material) {
-      throw createHttpError(400, 'Cannot find the material with such ID');
-    }
-
-    const isLiked = material.likes.includes(userId);
-
-    let response;
-    if(isLiked) {
-      response = {
-        ...material,
-        likes: material.likes.filter(id => id !== userId)
-      };
-    } else {
-      response = {
-        ...material,
-        likes: [ ...material.likes, userId ]
-      };
-    }
-    
-    await MaterialModel.findByIdAndUpdate(materialId, response);
-    const updatedMaterial = await MaterialModel.findById(materialId).lean().exec();
-
-    res.status(200).json(updatedMaterial)
-  } catch (error) {
-    next(error);
-  }
-};
-
 interface UpdateMaterialBody {
   _id: string,
   author: { 
@@ -262,7 +223,10 @@ export const updateMaterial: RequestHandler<unknown, unknown, UpdateMaterialBody
       }
     }
 
-    const updatedMaterial = await MaterialModel.findByIdAndUpdate(materialToUpdate._id, materialToUpdate);
+    await MaterialModel.findByIdAndUpdate(materialToUpdate._id, materialToUpdate);
+
+    const updatedMaterial = await MaterialModel.findById(materialToUpdate._id).lean().exec();
+
     res.status(200).json(updatedMaterial);
   } catch (error) {
     next(error);
