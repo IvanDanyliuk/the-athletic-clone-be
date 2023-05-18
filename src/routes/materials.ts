@@ -13,6 +13,7 @@ router.get('/homepage', MaterialsController.getHomepageSecondaryMaterials);
 router.get('/:id', MaterialsController.getMaterial);
 router.post('/', MaterialsController.createMaterial);
 router.patch('/', MaterialsController.updateMaterial);
+router.patch('/like', MaterialsController.likeMaterial);
 router.delete('/', MaterialsController.deleteMaterial);
 
 export default router;

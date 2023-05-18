@@ -22,7 +22,7 @@ interface CreateMaterialBody {
   isMain?: boolean,
   status: string,
   views: number,
-  likes: number,
+  likes: string[],
   publicationDate: string | any,
   comments: {
     user: string,
@@ -47,7 +47,7 @@ interface GetRecentMaterialsQuery {
 export const getMaterials: RequestHandler<unknown, unknown, unknown, GetAllMaterialsQuery> = async (req, res, next) => {
   const { page, itemsPerPage, filterData, sortData } = req.query;
   try {
-    const data = await MaterialModel.find().sort({ createdAt: -1 }).lean().exec();
+    const data = await MaterialModel.find().sort({ createdAt: -1 }).exec();
 
     let response;
 
@@ -68,12 +68,10 @@ export const getMaterials: RequestHandler<unknown, unknown, unknown, GetAllMater
       response = data;
     }
 
-    const materials = response?.slice(+itemsPerPage * +page, +itemsPerPage * (+page + 1))
-      .map(material => ({ ...material, likes: material.likes.length }));
-    
-    const materialsCount = response ? response.length : data.length;
-
-    res.status(200).json({ materials, materialsCount });
+    res.status(200).json({
+      materials: response?.slice(+itemsPerPage * +page, +itemsPerPage * (+page + 1)),
+      materialsCount: response ? response.length : data.length 
+    });
   } catch (error) {
     next(error);
   }
@@ -85,17 +83,13 @@ export const getMaterial: RequestHandler = async (req, res, next) => {
     if(!mongoose.isValidObjectId(id)) {
       throw(createHttpError(400, 'Invalid material id'));
     }
-    const material = await MaterialModel.findById(id).lean().exec();
-    
+
+    const material = await MaterialModel.findById(id).exec();
     if(!material) {
       createHttpError(404, 'Material not found');
     }
 
-    const response = { 
-      ...material, 
-      likes: material?.likes.length 
-    };
-    res.status(200).json(response);
+    res.status(200).json(material);
   } catch (error) {
     next(error);
   }
@@ -104,19 +98,11 @@ export const getMaterial: RequestHandler = async (req, res, next) => {
 export const getRecentMaterials: RequestHandler<unknown, unknown, unknown, GetRecentMaterialsQuery> = async (req, res, next) => {
   const { materialsNumber, materialTypes } = req.query;
   try {
-    const materials = await MaterialModel
-      .find({ type: { $in: materialTypes } })
-      .lean()
-      .sort({ createdAt: -1 })
-      .exec();
-
+    const materials = await MaterialModel.find({ type: { $in: materialTypes } }).sort({ createdAt: -1 }).exec();
     if(!materials) {
       throw(createHttpError(400, 'Materials not found'));
     }
-    const recentMaterials = materials
-      .slice(0, materialsNumber)
-      .map(material => ({ ...material, likes: material.likes.length }));
-
+    const recentMaterials = materials.slice(0, materialsNumber);
     res.status(200).json(recentMaterials);
   } catch (error) {
     next(error)
@@ -131,22 +117,17 @@ interface GetSecondaryMaterialsQuery {
 export const getHomepageSecondaryMaterials: RequestHandler<unknown, unknown, unknown, GetSecondaryMaterialsQuery> = async (req, res, next) => {
   const { topMaterialsNum, postsNum } = req.query;
   try {
-    const topMaterialsResponse = await MaterialModel
+    const topMaterials = await MaterialModel
       .find({ type: { $in: ['article', 'note'] } })
-      .lean()
       .sort({ likes: -1 })
       .exec();
 
-    const latestPostsResponse = await MaterialModel
+    const latestPosts = await MaterialModel
       .find({ type: { $in: ['post'] } })
-      .lean()
       .sort({ createdAt: -1 })
       .exec();
 
-    const mustReadArticleResponse = await MaterialModel
-      .findOne({ isMain: true })
-      .lean()
-      .exec();
+    const mustReadArticle = await MaterialModel.findOne({ isMain: true });
 
     const availableLeagues = await CompetitionModel.find().exec();
     const leagues = availableLeagues.map(league => league.fullName);
@@ -156,36 +137,20 @@ export const getHomepageSecondaryMaterials: RequestHandler<unknown, unknown, unk
           { type: { $in: ['article', 'note'] } },
           { labels: { $in: leagues } }
         ]
-       })
-       .lean();
+       });
     const leagueMaterials = leagues
       .map(leagueName => ({
         league: leagueName,
         logo: availableLeagues.find(item => item.fullName === leagueName)?.logoUrl,
-        materials: totalLeagueMaterials
-          .filter(material => material.labels.includes(leagueName))
-          .map(material => ({ ...material, likes: material.likes.length }))
+        materials: totalLeagueMaterials.filter(material => material.labels.includes(leagueName))
       }))
       .filter(league => league.materials.length > 0)
       .sort((a, b) => b.materials.length - a.materials.length);
 
-    const topMaterials = topMaterialsResponse
-      .slice(0, topMaterialsNum)
-      .map(material => ({ ...material, likes: material.likes.length }));
-
-    const latestPosts = latestPostsResponse
-      .slice(0, postsNum)
-      .map(material => ({ ...material, likes: material.likes.length }));
-
-    const mustRead = {
-      ...mustReadArticleResponse,
-      likes: mustReadArticleResponse?.likes.length
-    };
-
     res.status(200).json({
-      topMaterials,
-      latestPosts,
-      mustRead,
+      topMaterials: topMaterials.slice(0, topMaterialsNum),
+      latestPosts: latestPosts.slice(0, postsNum),
+      mustRead: mustReadArticle,
       leagueMaterials
     });
   } catch (error) {
@@ -214,15 +179,44 @@ export const createMaterial: RequestHandler<unknown, unknown, CreateMaterialBody
   }
 };
 
+interface LikeMaterialRequest {
+  userId: string,
+  materialId: string
+}
 
+export const likeMaterial: RequestHandler<unknown, unknown, LikeMaterialRequest, unknown> = async (req, res, next) => {
+  const { userId, materialId } = req.body;
 
-// const likeMaterial: RequestHandler = async (req, res, next) => {
-//   try {
+  try {
+    const material = await MaterialModel.findById(materialId).lean().exec();
+
+    if(!material) {
+      throw createHttpError(400, 'Cannot find the material with such ID');
+    }
+
+    const isLiked = material.likes.includes(userId);
+
+    let response;
+    if(isLiked) {
+      response = {
+        ...material,
+        likes: material.likes.filter(id => id !== userId)
+      };
+    } else {
+      response = {
+        ...material,
+        likes: [ ...material.likes, userId ]
+      };
+    }
     
-//   } catch (error) {
-//     next(error);
-//   }
-// };
+    await MaterialModel.findByIdAndUpdate(materialId, response);
+    const updatedMaterial = await MaterialModel.findById(materialId).lean().exec();
+
+    res.status(200).json(updatedMaterial)
+  } catch (error) {
+    next(error);
+  }
+};
 
 interface UpdateMaterialBody {
   _id: string,
@@ -240,7 +234,7 @@ interface UpdateMaterialBody {
   isMain?: boolean,
   status: string,
   views: number,
-  likes: number,
+  likes: string[],
   publicationDate: string | any,
   comments: {
     user: string,
