@@ -20,7 +20,9 @@ const materialSchema = new Schema({
   likes: [{ type: String }],
   comments: [{
     id: { type: String },
-    user: { type: String }, 
+    userId: { type: String },
+    userImage: { type: String },
+    userName: { type: String }, 
     message: { type: String }
   }],
   labels: { type: [String], required: true },
