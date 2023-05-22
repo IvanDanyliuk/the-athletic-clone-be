@@ -3,6 +3,8 @@ import mongoose from 'mongoose';
 import createHttpError from 'http-errors';
 import MaterialModel from '../models/material';
 import CompetitionModel from '../models/competition';
+import ClubModel from '../models/club';
+import UserModel from '../models/user';
 import { IMaterialsFilterData, IMaterialsSortData } from '../types';
 import { filterMaterials, sortMaterials } from '../util/helpers';
 
@@ -153,6 +155,40 @@ export const getHomepageSecondaryMaterials: RequestHandler<unknown, unknown, unk
       mustRead: mustReadArticle,
       leagueMaterials
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+interface GetFilterValues {
+  value: string;
+}
+
+export const getSearchValues: RequestHandler<unknown, unknown, unknown, GetFilterValues> = async (req, res, next) => {
+  const { value } = req.query;
+  try {
+    const regex = new RegExp(value);
+    const competitions = await CompetitionModel.find({ fullName: { $regex: regex, $options: 'i' } }).exec();
+    const clubs = await ClubModel.find({ $or: [{ fullName: { $regex: regex, $options: 'i' } }, { commonName: { $regex: regex, $options: 'i' } }] }).exec();
+    const authors = await UserModel.find({ $and: [{ role: 'author' }, { lastName: { $regex: regex, $options: 'i' } }] }).exec();
+
+    const response = { competitions, clubs, authors };
+    res.status(200).json(response);
+  } catch (error) {
+    next(error);
+  }
+};
+
+interface SearchMaterials {
+  value: string;
+  type: string;
+}
+
+export const searchMaterials: RequestHandler<unknown, unknown, unknown, SearchMaterials> = async (req, res, next) => {
+  const { value, type } = req.query;
+  try {
+    const materials = await MaterialModel.find({ $and: [{ labels: value }, { type }] }).exec();
+    res.status(200).json(materials);
   } catch (error) {
     next(error);
   }
