@@ -180,7 +180,7 @@ export const getSearchValues: RequestHandler<unknown, unknown, unknown, GetFilte
 };
 
 interface SearchMaterials {
-  value: string;
+  value: string | string[];
   type: string;
 }
 
