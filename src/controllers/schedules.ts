@@ -42,10 +42,21 @@ export const getSchedules: RequestHandler<unknown, unknown, unknown, GetAllSched
     const data = await ScheduleModel
       .find()
       .sort({ createdAt: -1 })
-      .populate([{ path: 'competition', populate: { path: 'clubs' } }])
-      .populate('fixture.games.home')
-      .populate('fixture.games.away')
+      .populate([
+        { 
+          path: 'competition',
+          populate: { path: 'clubs' }
+        },
+        {
+          path: 'fixture',
+          populate: [
+            { path: 'games.home' },
+            { path: 'games.away' }
+          ]
+        }
+      ])
       .exec();
+      
 
     let response;
 
@@ -79,13 +90,19 @@ export const getSchedules: RequestHandler<unknown, unknown, unknown, GetAllSched
   }
 };
 
-export const getSchedule: RequestHandler = async (req, res, next) => {
-  const { id } = req.params;
+interface GetScheduleQuery {
+  season: string;
+  leagueId: string;
+}
+
+export const getSchedule: RequestHandler<unknown, unknown, unknown, GetScheduleQuery> = async (req, res, next) => {
+  const { season, leagueId } = req.query;
   try {
-    if(!mongoose.isValidObjectId(id)) {
+    if(!mongoose.isValidObjectId(leagueId)) {
       throw(createHttpError(400, 'Invalid schedule id'));
     }
-    const schedule = await ScheduleModel.findById(id);
+    const schedule = await ScheduleModel.find({ $and: [{ season }, { competition: leagueId }] }).populate('competition').exec();
+    
     if(!schedule) {
       createHttpError(404, 'Schedule not found');
     }
@@ -109,8 +126,21 @@ export const createSchedule: RequestHandler<unknown, unknown, CreateScheduleBody
     };
 
     const newSchedule = await ScheduleModel.create(modifiedSchedule);
+    const response = await newSchedule.populate([
+      { 
+        path: 'competition',
+        populate: { path: 'clubs' }
+      },
+      {
+        path: 'fixture',
+        populate: [
+          { path: 'games.home' },
+          { path: 'games.away' }
+        ]
+      }
+    ])
 
-    res.status(201).json(newSchedule);
+    res.status(201).json(response);
   } catch (error) {
     next(error);
   }
@@ -152,7 +182,20 @@ export const updateSchedule: RequestHandler<unknown, unknown, UpdateScheduleBody
     }
 
     const updatedSchedule = await ScheduleModel.findByIdAndUpdate(scheduleToUpdate._id, scheduleToUpdate);
-    res.status(200).json(updatedSchedule);
+    const response = await updatedSchedule!.populate([
+      { 
+        path: 'competition',
+        populate: { path: 'clubs' }
+      },
+      {
+        path: 'fixture',
+        populate: [
+          { path: 'games.home' },
+          { path: 'games.away' }
+        ]
+      }
+    ]);
+    res.status(200).json(response);
   } catch (error) {
     next(error);
   }
@@ -168,7 +211,23 @@ export const deleteSchedule: RequestHandler = async (req, res, next) => {
 
     await ScheduleModel.findByIdAndDelete(id);
 
-    const data = await ScheduleModel.find().sort({ createdAt: -1 }).exec();
+    const data = await ScheduleModel
+      .find()
+      .sort({ createdAt: -1 })
+      .populate([
+        { 
+          path: 'competition',
+          populate: { path: 'clubs' }
+        },
+        {
+          path: 'fixture',
+          populate: [
+            { path: 'games.home' },
+            { path: 'games.away' }
+          ]
+        }
+      ])
+      .exec();
 
     res.status(200).json({
       schedules: data?.slice(+itemsPerPage! * +page!, +itemsPerPage! * (+page! + 1)),

@@ -2,7 +2,7 @@ import { Schema, model, InferSchemaType } from 'mongoose';
 
 
 const scheduleSchema = new Schema({
-  competition: { type: Schema.Types.Mixed, ref: 'Competition' },
+  competition: { type: Schema.Types.ObjectId, ref: 'Competition' },
   season: { type: String, required: true },
   fixture: [{
     id: { type: String, required: true },

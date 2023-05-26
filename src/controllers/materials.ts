@@ -181,14 +181,16 @@ export const getSearchValues: RequestHandler<unknown, unknown, unknown, GetFilte
 
 interface SearchMaterials {
   value: string | string[];
-  type: string;
+  type: string | string[];
+  materialsNum?: number;
 }
 
 export const searchMaterials: RequestHandler<unknown, unknown, unknown, SearchMaterials> = async (req, res, next) => {
-  const { value, type } = req.query;
+  const { value, type, materialsNum } = req.query;
   try {
-    const materials = await MaterialModel.find({ $and: [{ labels: value }, { type }] }).exec();
-    res.status(200).json(materials);
+    const materials = await MaterialModel.find({ $and: [{ labels: value }, { type }] }).sort({ createdAt: -1 }).exec();
+    const response = materialsNum ? materials.slice(0, materialsNum) : materials;
+    res.status(200).json(response);
   } catch (error) {
     next(error);
   }

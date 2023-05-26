@@ -134,7 +134,7 @@ export const sortPlayers = (players: PlayerType[], sortData: IPlayersSortData) =
   });
 };
 
-export const filterSchedules = (schedules: ScheduleType[], filterData: ISchedulesFilterData) => {
+export const filterSchedules = (schedules: any[], filterData: ISchedulesFilterData) => {
   const { competition, country, season, dateFrom, dateTo } = filterData;
 
   return schedules
