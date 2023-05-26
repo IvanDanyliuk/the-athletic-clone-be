@@ -1,3 +1,6 @@
+import { ClubType } from "./models/club"
+import { CompetitionType } from "./models/competition"
+
 export interface IMaterialsFilterData {
   author?: string,
   dateFrom?: string,
