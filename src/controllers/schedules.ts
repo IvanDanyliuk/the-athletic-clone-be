@@ -19,8 +19,14 @@ interface CreateScheduleBody {
       basicDate: string,
       games: {
         id: string,
-        home: ClubType[],
-        away: ClubType[],
+        home: {
+          club: ClubType,
+          points: string,
+        },
+        away: {
+          club: ClubType,
+          points: string,
+        },
         date: Date,
         location: string,
         score: string
@@ -50,8 +56,8 @@ export const getSchedules: RequestHandler<unknown, unknown, unknown, GetAllSched
         {
           path: 'fixture',
           populate: [
-            { path: 'games.home' },
-            { path: 'games.away' }
+            { path: 'games.home.club' },
+            { path: 'games.away.club' }
           ]
         }
       ])
@@ -101,7 +107,22 @@ export const getSchedule: RequestHandler<unknown, unknown, unknown, GetScheduleQ
     if(!mongoose.isValidObjectId(leagueId)) {
       throw(createHttpError(400, 'Invalid schedule id'));
     }
-    const schedule = await ScheduleModel.find({ $and: [{ season }, { competition: leagueId }] }).populate('competition').exec();
+    const schedule = await ScheduleModel
+      .findOne({ $and: [{ season }, { competition: leagueId }] })
+      .populate([
+        { 
+          path: 'competition',
+          populate: { path: 'clubs' }
+        },
+        {
+          path: 'fixture',
+          populate: [
+            { path: 'games.home.club' },
+            { path: 'games.away.club' }
+          ]
+        }
+      ])
+      .exec();
     
     if(!schedule) {
       createHttpError(404, 'Schedule not found');
@@ -134,8 +155,8 @@ export const createSchedule: RequestHandler<unknown, unknown, CreateScheduleBody
       {
         path: 'fixture',
         populate: [
-          { path: 'games.home' },
-          { path: 'games.away' }
+          { path: 'games.home.club' },
+          { path: 'games.away.club' }
         ]
       }
     ])
@@ -157,8 +178,14 @@ interface UpdateScheduleBody {
       basicDate: string, 
       games: {
         id: string,
-        home: ClubType[],
-        away: ClubType[],
+        home: {
+          club: ClubType,
+          points: number,
+        },
+        away: {
+          club: ClubType,
+          points: number,
+        },
         date: Date,
         location: string,
         score: string
@@ -190,8 +217,8 @@ export const updateSchedule: RequestHandler<unknown, unknown, UpdateScheduleBody
       {
         path: 'fixture',
         populate: [
-          { path: 'games.home' },
-          { path: 'games.away' }
+          { path: 'games.home.club' },
+          { path: 'games.away.club' }
         ]
       }
     ]);
@@ -222,8 +249,8 @@ export const deleteSchedule: RequestHandler = async (req, res, next) => {
         {
           path: 'fixture',
           populate: [
-            { path: 'games.home' },
-            { path: 'games.away' }
+            { path: 'games.home.club' },
+            { path: 'games.away.club' }
           ]
         }
       ])
