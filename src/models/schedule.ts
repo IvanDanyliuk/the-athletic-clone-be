@@ -13,11 +13,13 @@ const scheduleSchema = new Schema({
         id: { type: String }, 
         home: { 
           club: { type: Schema.Types.ObjectId, ref: 'Club' },
-          points: { type: Number }
+          points: { type: Number },
+          goals: { type: Number }
         },
         away: { 
           club: { type: Schema.Types.ObjectId, ref: 'Club' },
-          points: { type: Number }
+          points: { type: Number },
+          goals: { type: Number }
         },
         date: { type: Date, required: true },
         location: { type: String, required: true },

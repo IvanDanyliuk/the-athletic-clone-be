@@ -22,10 +22,12 @@ interface CreateScheduleBody {
         home: {
           club: ClubType,
           points: string,
+          goals: string,
         },
         away: {
           club: ClubType,
           points: string,
+          goals: string,
         },
         date: Date,
         location: string,
@@ -181,10 +183,12 @@ interface UpdateScheduleBody {
         home: {
           club: ClubType,
           points: number,
+          goals: string,
         },
         away: {
           club: ClubType,
           points: number,
+          goals: string,
         },
         date: Date,
         location: string,
