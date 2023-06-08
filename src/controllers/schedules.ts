@@ -69,7 +69,6 @@ export const getSchedules: RequestHandler<unknown, unknown, unknown, GetAllSched
       ])
       .exec();
       
-
     let response;
 
     if(sortData) {
@@ -97,6 +96,40 @@ export const getSchedules: RequestHandler<unknown, unknown, unknown, GetAllSched
     } else {
       res.status(200).json(data); 
     }
+  } catch (error) {
+    next(error);
+  }
+};
+
+interface GetSchedulesByClubQuery {
+  season: string;
+  clubId: string;
+}
+
+export const getSchedulesByClub: RequestHandler<unknown, unknown, unknown, GetSchedulesByClubQuery> = async (req, res, next) => {
+  const { season, clubId } = req.query;
+  try {
+    const schedules = await ScheduleModel
+      .find({ season })
+      .populate([
+        { 
+          path: 'competition',
+          populate: { path: 'clubs' },
+          match: { 'clubs': { $in: [ clubId ] } }
+        },
+        {
+          path: 'fixture',
+          populate: [
+            { path: 'games.home.club' },
+            { path: 'games.away.club' }
+          ]
+        }
+      ])
+      .then(schedulesData => schedulesData.filter(schedule => schedule.competition !== null));
+      res.status(200).json({
+        schedules,
+        schedulesCount: schedules.length
+      });
   } catch (error) {
     next(error);
   }

@@ -5,6 +5,7 @@ import * as ScheduleController from '../controllers/schedules';
 const router = express.Router();
 
 router.get('/', ScheduleController.getSchedules);
+router.get('/by-club', ScheduleController.getSchedulesByClub);
 router.get('/:id', ScheduleController.getSchedule);
 router.post('/', ScheduleController.createSchedule);
 router.patch('/', ScheduleController.updateSchedule);

@@ -50,8 +50,12 @@ export const getPlayers: RequestHandler<unknown, unknown, unknown, GetAllPlayers
       response = data;
     }
 
+    if(page && itemsPerPage) {
+      response = data.slice(+itemsPerPage * +page, +itemsPerPage * (+page + 1));
+    }
+
     res.status(200).json({
-      players: response?.slice(+itemsPerPage * +page, +itemsPerPage * (+page + 1)),
+      players: response,
       playersCount: response ? response.length : data.length
     });
   } catch (error) {
