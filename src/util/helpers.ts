@@ -6,7 +6,7 @@ import { ScheduleType } from '../models/schedule';
 import { UserType } from '../models/user';
 import { 
   IClubsFilterData, IClubsSortData, ICompetitionsFilterData, ICompetitionsSortData, 
-  IMaterialsFilterData, IMaterialsSortData, IPlayersFilterData, IPlayersSortData, 
+  IMaterialsFilterData, IMaterialsSortData, IPlayer, IPlayersFilterData, IPlayersSortData, 
   ISchedulesFilterData, ISchedulesSortData, IUserFilterData, IUserSortData, Order 
 } from '../types';
 
@@ -115,7 +115,7 @@ export const filterPlayers = (players: PlayerType[], filterData: IPlayersFilterD
   const { club, country, dateFrom, dateTo, position } = filterData;
 
   return players
-    .filter(player => club ? player.club == club : true)
+    .filter(player => club ? player.club?.equals(club) : true)
     .filter(player => country ? player.country == country : true)
     .filter(player => position ? player.position == position : true)
     .filter(player => dateFrom && dateTo ? 

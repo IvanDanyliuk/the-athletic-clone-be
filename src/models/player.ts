@@ -9,7 +9,7 @@ const playerSchema = new Schema({
   photoUrl: { type: String },
   number: { type: Number },
   position: { type: String, required: true },
-  club: { type: String },
+  club: { type: Schema.Types.ObjectId, ref: 'Club' },
 }, {
   timestamps: true
 });

@@ -2,6 +2,7 @@ import { RequestHandler } from 'express';
 import mongoose from 'mongoose';
 import createHttpError from 'http-errors';
 import PlayerModel from '../models/player';
+import ClubModel from '../models/club';
 import { ClubType } from '../models/club';
 import { IPlayersFilterData, IPlayersSortData } from '../types';
 import { filterPlayers, sortPlayers } from '../util/helpers';
@@ -29,9 +30,9 @@ export const getPlayers: RequestHandler<unknown, unknown, unknown, GetAllPlayers
   const { page, itemsPerPage, filterData, sortData } = req.query;
 
   try {
-    const data = await PlayerModel.find().sort({ createdAt: -1 }).exec();
+    const data = await PlayerModel.find().populate('club').sort({ createdAt: -1 }).exec();
 
-    let response;
+    let response: any = null;
 
     if(sortData) {
       response = sortPlayers(data, sortData);
@@ -50,12 +51,12 @@ export const getPlayers: RequestHandler<unknown, unknown, unknown, GetAllPlayers
       response = data;
     }
 
-    if(page && itemsPerPage) {
-      response = data.slice(+itemsPerPage * +page, +itemsPerPage * (+page + 1));
-    }
+    const players = !page && !itemsPerPage ? 
+      response : 
+      response.slice(+itemsPerPage * +page, +itemsPerPage * (+page + 1));
 
     res.status(200).json({
-      players: response,
+      players,
       playersCount: response ? response.length : data.length
     });
   } catch (error) {
@@ -69,7 +70,7 @@ export const getPlayer: RequestHandler = async (req, res, next) => {
     if(!mongoose.isValidObjectId(id)) {
       throw(createHttpError(400, 'Invalid player id'));
     }
-    const player = await PlayerModel.findById(id);
+    const player = await PlayerModel.findById(id).populate('club').exec();
     res.status(200).json(player);
   } catch (error) {
     next(error);
@@ -92,7 +93,13 @@ export const createPlayer: RequestHandler<unknown, unknown, CreatePlayerBody, un
       throw createHttpError(400, 'Player must have a position');
     }
 
-    const newPlayer = await PlayerModel.create(player);
+    const club = await ClubModel.findById(player.club).exec();
+    const playerData = {
+      ...player,
+      club
+    };
+    const newPlayer = await PlayerModel.create(playerData);
+
     res.status(201).json(newPlayer);
   } catch (error) {
     next(error);

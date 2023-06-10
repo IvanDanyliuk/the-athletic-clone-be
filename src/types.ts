@@ -1,3 +1,4 @@
+import { ObjectId } from "mongoose"
 import { ClubType } from "./models/club"
 import { CompetitionType } from "./models/competition"
 
@@ -73,4 +74,29 @@ export interface ISchedulesFilterData {
 export interface ISchedulesSortData {
   indicator: string,
   order: Order
+}
+
+export interface IClub {
+  _id: string,
+  fullName: string,
+  commonName: string,
+  shortName: string,
+  country: string,
+  clubLogoUrl: string,
+  stadium: string
+  createdAt: Date,
+  updatedAt: Date
+}
+
+export interface IPlayer {
+  firstName: string,
+  lastName: string,
+  birthDate: Date,
+  country: string,
+  photoUrl?: string,
+  number: string,
+  position: string,
+  club: IClub,
+  createdAt: Date,
+  updatedAt: Date
 }
