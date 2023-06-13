@@ -32,7 +32,7 @@ export const getPlayers: RequestHandler<unknown, unknown, unknown, GetAllPlayers
   try {
     const data = await PlayerModel.find().populate('club').sort({ createdAt: -1 }).exec();
 
-    let response: any = null;
+    let response;
 
     if(sortData) {
       response = sortPlayers(data, sortData);
@@ -53,7 +53,7 @@ export const getPlayers: RequestHandler<unknown, unknown, unknown, GetAllPlayers
 
     const players = !page && !itemsPerPage ? 
       response : 
-      response.slice(+itemsPerPage * +page, +itemsPerPage * (+page + 1));
+      response?.slice(+itemsPerPage * +page, +itemsPerPage * (+page + 1));
 
     res.status(200).json({
       players,

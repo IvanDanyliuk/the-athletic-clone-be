@@ -13,6 +13,7 @@ router.post('/login', UserController.login);
 router.post('/logout', UserController.logout);
 router.post('/new-user', UserController.createUser);
 router.patch('/', UserController.updateUser);
+router.patch('/password', UserController.updatePassword);
 router.delete('/', UserController.deleteUser);
 
 export default router;

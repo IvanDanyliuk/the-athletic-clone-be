@@ -107,7 +107,7 @@ export const login: RequestHandler<unknown, unknown, LoginBody, unknown> = async
     const passwordMatch = await bcrypt.compare(password, user.password);
 
     if(!passwordMatch) {
-      throw(createHttpError(400, 'Passwords don\'t match'));
+      throw(createHttpError(400, 'Incorrect password'));
     }
 
     req.session.userId = user._id;
@@ -279,8 +279,33 @@ export const updateUser: RequestHandler<unknown, unknown, UpdateUserBody, unknow
       throw(createHttpError(401, 'User must have an email'));
     }
 
-    const updatedUser = await UserModel.findByIdAndUpdate(userToUpdate._id, userToUpdate);
+    await UserModel.findByIdAndUpdate(userToUpdate._id, userToUpdate);
+    const updatedUser = await UserModel.findById(userToUpdate._id);
+
     res.status(200).json(updatedUser);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updatePassword: RequestHandler = async (req, res, next) => {
+  const { id, newPassword, currPassword } = req.body;
+  try {
+    const user = await UserModel.findById(id).exec();
+    const isPasswordMatch = await bcrypt.compare(currPassword, user!.password);
+
+    if(!user) {
+      throw(createHttpError(401, 'User does not exist'));
+    }
+    
+    if(isPasswordMatch) {
+      const newPasswordHashed = await bcrypt.hash(newPassword, 10);
+      await UserModel.findByIdAndUpdate(id, { ...user.toObject(), password: newPasswordHashed });
+      const updatedUser = await UserModel.findById(id);
+      res.status(200).json(updatedUser);
+    } else {
+      throw(createHttpError(401, 'Passwords do not match'));
+    }
   } catch (error) {
     next(error);
   }
