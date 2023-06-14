@@ -187,7 +187,6 @@ interface SearchMaterials {
 
 export const searchMaterials: RequestHandler<unknown, unknown, unknown, SearchMaterials> = async (req, res, next) => {
   const { value, type, materialsNum } = req.query;
-  console.log(typeof value, req.query)
   const requestValue = typeof value === 'string' ? new RegExp(value) : value[0];
   try {
     const materials = await MaterialModel.find({ 
