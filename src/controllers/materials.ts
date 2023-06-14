@@ -187,8 +187,22 @@ interface SearchMaterials {
 
 export const searchMaterials: RequestHandler<unknown, unknown, unknown, SearchMaterials> = async (req, res, next) => {
   const { value, type, materialsNum } = req.query;
+  console.log(typeof value, req.query)
+  const requestValue = typeof value === 'string' ? new RegExp(value) : value[0];
   try {
-    const materials = await MaterialModel.find({ $and: [{ labels: value }, { type }] }).sort({ createdAt: -1 }).exec();
+    const materials = await MaterialModel.find({ 
+      $and: [
+        { 
+          $or: [
+            { labels: value }, 
+            { title: { $regex: requestValue, $options: 'i' } }
+          ] 
+        }, 
+        { type }
+      ] })
+      .sort({ createdAt: -1 })
+      .exec();
+    
     const response = materialsNum ? materials.slice(0, materialsNum) : materials;
     res.status(200).json(response);
   } catch (error) {
