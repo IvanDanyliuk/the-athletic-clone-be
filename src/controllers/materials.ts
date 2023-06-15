@@ -193,7 +193,7 @@ export const searchMaterials: RequestHandler<unknown, unknown, unknown, SearchMa
       $and: [
         { 
           $or: [
-            { labels: value }, 
+            { labels: { $in: value } }, 
             { title: { $regex: requestValue, $options: 'i' } }
           ] 
         }, 
