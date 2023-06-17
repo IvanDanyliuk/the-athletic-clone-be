@@ -16,7 +16,7 @@ export const filterMaterials = (materials: MaterialType[], filterData: IMaterial
 
   return materials
     .filter(material => type ? material.type == type : true)
-    .filter(material => author ? material.author?.name == author : true)
+    .filter(material => author ? material.author?.userId == author : true)
     .filter(material => dateFrom && dateTo ? 
       Date.parse(material.createdAt.toISOString()) >= Date.parse(dateFrom!) && 
       Date.parse(material.createdAt.toISOString()) <= Date.parse(dateTo!) 
