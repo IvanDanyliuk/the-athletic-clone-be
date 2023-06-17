@@ -194,6 +194,7 @@ export const searchMaterials: RequestHandler<unknown, unknown, unknown, SearchMa
         { 
           $or: [
             { labels: { $in: value } }, 
+            { 'author.name': { $in: value } }, 
             { title: { $regex: requestValue, $options: 'i' } }
           ] 
         }, 

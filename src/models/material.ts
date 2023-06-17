@@ -4,6 +4,7 @@ import { Schema, model, InferSchemaType } from 'mongoose';
 const materialSchema = new Schema({
   author: { 
     name: { type: String, required: true },
+    userId: { type: String, required: true }, 
     photoUrl: { type: String },
     organization: { type: String, required: true },
     position: { type: String, required: true },
