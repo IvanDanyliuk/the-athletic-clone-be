@@ -6,7 +6,7 @@ import { ScheduleType } from '../models/schedule';
 import { UserType } from '../models/user';
 import { 
   IClubsFilterData, IClubsSortData, ICompetitionsFilterData, ICompetitionsSortData, 
-  IMaterialsFilterData, IMaterialsSortData, IPlayer, IPlayersFilterData, IPlayersSortData, 
+  IMaterialsFilterData, IMaterialsSortData, IPlayersFilterData, IPlayersSortData, 
   ISchedulesFilterData, ISchedulesSortData, IUserFilterData, IUserSortData, Order 
 } from '../types';
 

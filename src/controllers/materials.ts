@@ -286,7 +286,7 @@ export const updateMaterial: RequestHandler<unknown, unknown, UpdateMaterialBody
 };
 
 export const deleteMaterial: RequestHandler = async (req, res, next) => {
-  const { id, page, itemsPerPage } = req.query;
+  const { id, page, itemsPerPage, userId } = req.query;
   
   try {
     if(!mongoose.isValidObjectId(id)) {
@@ -294,7 +294,9 @@ export const deleteMaterial: RequestHandler = async (req, res, next) => {
     }
 
     await MaterialModel.findByIdAndDelete(id);
-    const data = await MaterialModel.find().sort({ createdAt: -1 }).exec();
+    const data = userId ? 
+      await MaterialModel.find({ 'author.userId': userId }).sort({ createdAt: -1 }).exec() : 
+      await MaterialModel.find().sort({ createdAt: -1 }).exec();
 
     res.status(200).json({
       materials: data?.slice(+itemsPerPage! * +page!, +itemsPerPage! * (+page! + 1)),

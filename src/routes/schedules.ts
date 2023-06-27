@@ -6,6 +6,7 @@ const router = express.Router();
 
 router.get('/', ScheduleController.getSchedules);
 router.get('/by-club', ScheduleController.getSchedulesByClub);
+router.get('/recent-matches', ScheduleController.getRecentMatches);
 router.get('/:id', ScheduleController.getSchedule);
 router.post('/', ScheduleController.createSchedule);
 router.patch('/', ScheduleController.updateSchedule);

@@ -7,6 +7,7 @@ import { CompetitionType } from '../models/competition';
 import { ClubType } from '../models/club';
 import { ISchedulesFilterData, ISchedulesSortData } from '../types';
 import { filterSchedules, sortSchedules } from '../util/helpers';
+import schedule from '../models/schedule';
 
 
 interface CreateScheduleBody {
@@ -167,6 +168,46 @@ export const getSchedule: RequestHandler<unknown, unknown, unknown, GetScheduleQ
       createHttpError(404, 'Schedule not found');
     }
     res.status(200).json(schedule);
+  } catch (error) {
+    next(error);
+  }
+};
+
+interface GetRecentMatchesQuery {
+  season: string;
+}
+
+export const getRecentMatches: RequestHandler<unknown, unknown, unknown, GetRecentMatchesQuery> = async (req, res, next) => {
+  const { season } = req.query;
+  const currentDate = new Date().getTime();
+  try {
+    const schedules = await ScheduleModel
+      .find({ season })
+      .populate<{ competition: CompetitionType }>([
+        { 
+          path: 'competition',
+          populate: { path: 'clubs' }
+        },
+        {
+          path: 'fixture',
+          populate: [
+            { path: 'games.home.club' },
+            { path: 'games.away.club' }
+          ]
+        }
+      ])
+      .then(schedulesData => schedulesData.map(schedule => ({
+        league: schedule.competition!.shortName,
+        matches: schedule.fixture.reduce((prev, curr) => {
+          const a = Math.abs(new Date(curr.basicDate).getTime() - currentDate);
+          const b = Math.abs(new Date(prev.basicDate).getTime() - currentDate);
+          return a - b < 0 ? curr : prev;
+        }).games
+      })));
+
+    console.log(schedules)
+
+    res.status(200).json(schedules)
   } catch (error) {
     next(error);
   }
