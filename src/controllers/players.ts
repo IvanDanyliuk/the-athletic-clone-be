@@ -16,7 +16,7 @@ interface CreatePlayerBody {
   photoUrl?: string | undefined,
   number?: number | undefined,
   position: string,
-  club?: ClubType | undefined,
+  club?: string,
 }
 
 interface GetAllPlayersQuery {
@@ -93,11 +93,15 @@ export const createPlayer: RequestHandler<unknown, unknown, CreatePlayerBody, un
       throw createHttpError(400, 'Player must have a position');
     }
 
-    const club = await ClubModel.findById(player.club).exec();
+    const club = player.club ? 
+      await ClubModel.findById(player.club).exec() : 
+      undefined;
+
     const playerData = {
       ...player,
       club
     };
+
     const newPlayer = await PlayerModel.create(playerData);
 
     res.status(201).json(newPlayer);
