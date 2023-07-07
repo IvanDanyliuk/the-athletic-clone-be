@@ -3,28 +3,9 @@ import mongoose from 'mongoose';
 import createHttpError from 'http-errors';
 import PlayerModel from '../models/player';
 import ClubModel from '../models/club';
-import { ClubType } from '../models/club';
-import { IPlayersFilterData, IPlayersSortData } from '../types';
 import { filterPlayers, sortPlayers } from '../util/helpers';
+import { CreatePlayerBody, GetAllPlayersQuery, UpdatePlayerBody } from '../types/players';
 
-
-interface CreatePlayerBody {
-  firstName: string,
-  lastName: string,
-  birthDate: string,
-  country: string,
-  photoUrl?: string | undefined,
-  number?: number | undefined,
-  position: string,
-  club?: string,
-}
-
-interface GetAllPlayersQuery {
-  page: string,
-  itemsPerPage: string,
-  filterData?: IPlayersFilterData,
-  sortData?: IPlayersSortData
-}
 
 export const getPlayers: RequestHandler<unknown, unknown, unknown, GetAllPlayersQuery> = async (req, res, next) => {
   const { page, itemsPerPage, filterData, sortData } = req.query;
@@ -109,19 +90,6 @@ export const createPlayer: RequestHandler<unknown, unknown, CreatePlayerBody, un
     next(error);
   }
 };
-
-interface UpdatePlayerBody {
-  _id: string,
-  firstName: string,
-  lastName: string,
-  birthDate: string,
-  country: string,
-  photoUrl?: string | undefined,
-  number?: number | undefined,
-  position: string,
-  club?: ClubType | undefined,
-  createdAt: string
-}
 
 export const updatePlayer: RequestHandler<unknown, unknown, UpdatePlayerBody, unknown> = async (req, res, next) => {
   const playerToUpdate = req.body;

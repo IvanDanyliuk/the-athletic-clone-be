@@ -3,26 +3,9 @@ import mongoose from 'mongoose';
 import createHttpError from 'http-errors';
 import CompetitionModel from '../models/competition';
 import ClubModel from '../models/club';
-import { ClubType } from '../models/club';
-import { ICompetitionsFilterData, ICompetitionsSortData } from '../types';
 import { filterCompetitions, sortCompetitions } from '../util/helpers';
+import { CreateCompetitionBody, GetAllCompetitionsQuery, UpdateCompetitionBody } from '../types/competitions';
 
-
-interface CreateCompetitionBody {
-  fullName: string,
-  shortName: string,
-  country: string,
-  clubs: ClubType[],
-  logoUrl: string,
-  type: string,
-}
-
-interface GetAllCompetitionsQuery {
-  page: string,
-  itemsPerPage: string,
-  filterData?: ICompetitionsFilterData,
-  sortData?: ICompetitionsSortData
-}
 
 export const getCompetitions: RequestHandler<unknown, unknown, unknown, GetAllCompetitionsQuery> = async (req, res, next) => {
   const { page, itemsPerPage, filterData, sortData } = req.query;
@@ -111,17 +94,6 @@ export const createCompetition: RequestHandler<unknown, unknown, CreateCompetiti
     next(error);
   }
 };
-
-interface UpdateCompetitionBody {
-  _id: string,
-  fullName: string,
-  shortName: string,
-  country: string,
-  clubs: ClubType[],
-  logoUrl: string,
-  type: string,
-  createdAt: string
-}
 
 export const updateCompetition: RequestHandler<unknown, unknown, UpdateCompetitionBody, unknown> = async (req, res, next) => {
   const competitionToUpdate = req.body;

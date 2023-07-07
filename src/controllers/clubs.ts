@@ -3,24 +3,8 @@ import mongoose from 'mongoose';
 import createHttpError from 'http-errors';
 import ClubModel from '../models/club';
 import { filterClubs, sortClubs } from '../util/helpers';
-import { IClubsFilterData, IClubsSortData } from '../types';
+import { CreateClubBody, GetAllClubsQuery, UpdateClubBody } from '../types/clubs';
 
-
-interface CreateClubBody {
-  fullName: string,
-  commonName: string,
-  shortName: string,
-  country: string,
-  clubLogoUrl?: string,
-  stadium?: string
-}
-
-interface GetAllClubsQuery {
-  page: string,
-  itemsPerPage: string,
-  filterData?: IClubsFilterData,
-  sortData?: IClubsSortData
-}
 
 export const getClubs: RequestHandler<unknown, unknown, unknown, GetAllClubsQuery> = async (req, res, next) => {
   const { page, itemsPerPage, filterData, sortData } = req.query;
@@ -108,16 +92,6 @@ export const createClub: RequestHandler<unknown, unknown, CreateClubBody,unknown
     next(error);
   }
 };
-
-interface UpdateClubBody {
-  _id: string,
-  fullName: string,
-  commonName: string,
-  shortName: string,
-  country: string,
-  clubLogoUrl?: string,
-  stadium?: string
-}
 
 export const updateClub: RequestHandler<unknown, unknown, UpdateClubBody, unknown> = async (req, res, next) => {
   const clubToUpdate = req.body;

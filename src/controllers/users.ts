@@ -3,8 +3,8 @@ import mongoose from 'mongoose';
 import createHttpError from 'http-errors';
 import UserModel from '../models/user';
 import bcrypt from 'bcrypt';
-import { IUserFilterData, IUserSortData } from '../types';
 import { filterUsers, sortUsers } from '../util/helpers';
+import { CreateUserBody, GetAllUsersQuery, LoginBody, SignUpBody, UpdateUserBody } from '../types/users';
 
 
 export const getAuthenticatedUser: RequestHandler = async (req, res, next) => {
@@ -20,18 +20,6 @@ export const getAuthenticatedUser: RequestHandler = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-}
-
-interface SignUpBody {
-  firstName: string,
-  lastName: string,
-  email: string,
-  password: string,
-  userPhotoUrl?: string,
-  role?: string,
-  location?: string,
-  organization?: string,
-  position?: string
 }
 
 export const signUp: RequestHandler<unknown, unknown, SignUpBody, unknown> = async (req, res, next) => {
@@ -85,11 +73,6 @@ export const signUp: RequestHandler<unknown, unknown, SignUpBody, unknown> = asy
   }
 };
 
-interface LoginBody {
-  email?: string,
-  password?: string
-}
-
 export const login: RequestHandler<unknown, unknown, LoginBody, unknown> = async (req, res, next) => {
   const { email, password } = req.body;
 
@@ -126,18 +109,6 @@ export const logout: RequestHandler = async (req, res, next) => {
     }
   });
 };
-
-interface CreateUserBody {
-  firstName: string,
-  lastName: string,
-  email: string,
-  password: string,
-  userPhotoUrl?: string,
-  role?: string,
-  location?: string,
-  organization?: string,
-  position?: string
-}
 
 export const createUser: RequestHandler<unknown, unknown, CreateUserBody, unknown> = async (req, res, next) => {
   const { 
@@ -203,13 +174,6 @@ export const getUsersByRole: RequestHandler = async (req, res, next) => {
   }
 };
 
-interface GetAllUsersQuery {
-  page: string,
-  itemsPerPage: string,
-  filterData?: IUserFilterData,
-  sortData?: IUserSortData
-}
-
 export const getAllUsers: RequestHandler<unknown, unknown, unknown, GetAllUsersQuery> = async (req, res, next) => {
   const { page, itemsPerPage, filterData, sortData } = req.query;
   try {
@@ -253,19 +217,6 @@ export const getUsersLocations: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
-
-interface UpdateUserBody {
-  _id: string,
-  firstName: string,
-  lastName: string,
-  email: string,
-  password?: string,
-  userPhotoUrl?: string,
-  role: string,
-  location?: string,
-  organization?: string,
-  position?: string
-}
 
 export const updateUser: RequestHandler<unknown, unknown, UpdateUserBody, unknown> = async (req, res, next) => {
   const userToUpdate = req.body;

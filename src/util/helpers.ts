@@ -4,11 +4,13 @@ import { MaterialType } from '../models/material';
 import { PlayerType } from '../models/player';
 import { ScheduleType } from '../models/schedule';
 import { UserType } from '../models/user';
-import { 
-  IClubsFilterData, IClubsSortData, ICompetitionsFilterData, ICompetitionsSortData, 
-  IMaterialsFilterData, IMaterialsSortData, IPlayersFilterData, IPlayersSortData, 
-  ISchedulesFilterData, ISchedulesSortData, IUserFilterData, IUserSortData, Order 
-} from '../types';
+import { IClubsFilterData, IClubsSortData } from '../types/clubs';
+import { Order } from '../types/common';
+import { ICompetitionsFilterData, ICompetitionsSortData } from '../types/competitions';
+import { IMaterialsFilterData, IMaterialsSortData } from '../types/materials';
+import { IPlayersFilterData, IPlayersSortData } from '../types/players';
+import { ISchedulesFilterData, ISchedulesSortData } from '../types/schedules';
+import { IUserFilterData, IUserSortData } from '../types/users';
 
 
 export const filterMaterials = (materials: MaterialType[], filterData: IMaterialsFilterData) => {

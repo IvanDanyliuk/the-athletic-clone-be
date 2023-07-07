@@ -4,50 +4,12 @@ import createHttpError from 'http-errors';
 import ScheduleModel from '../models/schedule';
 import CompetitionModel from '../models/competition';
 import { CompetitionType } from '../models/competition';
-import { ClubType } from '../models/club';
-import { ISchedulesFilterData, ISchedulesSortData } from '../types';
 import { filterSchedules, sortSchedules } from '../util/helpers';
-import schedule from '../models/schedule';
+import { 
+  CreateScheduleBody, GetAllSchedulesQuery, GetRecentMatchesQuery, 
+  GetScheduleQuery, GetSchedulesByClubQuery, UpdateScheduleBody 
+} from '../types/schedules';
 
-
-interface CreateScheduleBody {
-  competition: CompetitionType,
-  season: string,
-  fixture: [
-    {
-      id: string,
-      matchweekName: string,
-      basicDate: string,
-      games: {
-        id: string,
-        home: {
-          club: ClubType,
-          points: string,
-          goalsFor: string,
-          goalsAgainst: string,
-          final: string,
-        },
-        away: {
-          club: ClubType,
-          points: string,
-          goalsFor: string,
-          goalsAgainst: string,
-          final: string,
-        },
-        date: Date,
-        location: string,
-        score: string
-      }[]
-    }
-  ]
-}
-
-interface GetAllSchedulesQuery {
-  page: string,
-  itemsPerPage: string,
-  filterData?: ISchedulesFilterData,
-  sortData?: ISchedulesSortData
-}
 
 export const getSchedules: RequestHandler<unknown, unknown, unknown, GetAllSchedulesQuery> = async (req, res, next) => {
   const { page, itemsPerPage, filterData, sortData } = req.query;
@@ -102,11 +64,6 @@ export const getSchedules: RequestHandler<unknown, unknown, unknown, GetAllSched
   }
 };
 
-interface GetSchedulesByClubQuery {
-  season: string;
-  clubId: string;
-}
-
 export const getSchedulesByClub: RequestHandler<unknown, unknown, unknown, GetSchedulesByClubQuery> = async (req, res, next) => {
   const { season, clubId } = req.query;
   try {
@@ -135,11 +92,6 @@ export const getSchedulesByClub: RequestHandler<unknown, unknown, unknown, GetSc
     next(error);
   }
 };
-
-interface GetScheduleQuery {
-  season: string;
-  leagueId: string;
-}
 
 export const getSchedule: RequestHandler<unknown, unknown, unknown, GetScheduleQuery> = async (req, res, next) => {
   const { season, leagueId } = req.query;
@@ -172,10 +124,6 @@ export const getSchedule: RequestHandler<unknown, unknown, unknown, GetScheduleQ
     next(error);
   }
 };
-
-interface GetRecentMatchesQuery {
-  season: string;
-}
 
 export const getRecentMatches: RequestHandler<unknown, unknown, unknown, GetRecentMatchesQuery> = async (req, res, next) => {
   const { season } = req.query;
@@ -246,39 +194,6 @@ export const createSchedule: RequestHandler<unknown, unknown, CreateScheduleBody
     next(error);
   }
 };
-
-interface UpdateScheduleBody {
-  _id: string,
-  competition: CompetitionType,
-  season: string,
-  fixture: [
-    {
-      id: string,
-      matchweekName: string,
-      basicDate: string, 
-      games: {
-        id: string,
-        home: {
-          club: ClubType,
-          points: number,
-          goalsFor: string,
-          goalsAgainst: string,
-          final: string,
-        },
-        away: {
-          club: ClubType,
-          points: number,
-          goalsFor: string,
-          goalsAgainst: string,
-          final: string,
-        },
-        date: Date,
-        location: string,
-        score: string
-      }[]
-    }
-  ]
-}
 
 export const updateSchedule: RequestHandler<unknown, unknown, UpdateScheduleBody, unknown> = async (req, res, next) => {
   const scheduleToUpdate = req.body;

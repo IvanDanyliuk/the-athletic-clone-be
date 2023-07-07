@@ -5,45 +5,11 @@ import MaterialModel from '../models/material';
 import CompetitionModel from '../models/competition';
 import ClubModel from '../models/club';
 import UserModel from '../models/user';
-import { IMaterialsFilterData, IMaterialsSortData } from '../types';
 import { filterMaterials, sortMaterials } from '../util/helpers';
-
-
-interface CreateMaterialBody {
-  author: { 
-    name: string,
-    photoUrl?: string,
-    organization: string,
-    position: string,
-  },
-  type: string,
-  title?: string,
-  content: string,
-  preview?: string,
-  image?: string,
-  isMain?: boolean,
-  status: string,
-  views: number,
-  likes: string[],
-  publicationDate: string | any,
-  comments: {
-    user: string,
-    message: string
-  }[],
-  labels: string[]
-}
-
-interface GetAllMaterialsQuery {
-  page: string,
-  itemsPerPage: string,
-  filterData?: IMaterialsFilterData,
-  sortData?: IMaterialsSortData
-}
-
-interface GetRecentMaterialsQuery {
-  materialsNumber: number,
-  materialTypes: string[]
-}
+import { 
+  CreateMaterialBody, GetAllMaterialsQuery, GetFilterValues, GetRecentMaterialsQuery, 
+  GetSecondaryMaterialsQuery, SearchMaterials, UpdateMaterialBody 
+} from '../types/materials';
 
 
 export const getMaterials: RequestHandler<unknown, unknown, unknown, GetAllMaterialsQuery> = async (req, res, next) => {
@@ -111,11 +77,6 @@ export const getRecentMaterials: RequestHandler<unknown, unknown, unknown, GetRe
   }
 };
 
-interface GetSecondaryMaterialsQuery {
-  topMaterialsNum: number,
-  postsNum: number,
-}
-
 export const getHomepageSecondaryMaterials: RequestHandler<unknown, unknown, unknown, GetSecondaryMaterialsQuery> = async (req, res, next) => {
   const { topMaterialsNum, postsNum } = req.query;
   try {
@@ -160,10 +121,6 @@ export const getHomepageSecondaryMaterials: RequestHandler<unknown, unknown, unk
   }
 };
 
-interface GetFilterValues {
-  value: string;
-}
-
 export const getSearchValues: RequestHandler<unknown, unknown, unknown, GetFilterValues> = async (req, res, next) => {
   const { value } = req.query;
   try {
@@ -178,12 +135,6 @@ export const getSearchValues: RequestHandler<unknown, unknown, unknown, GetFilte
     next(error);
   }
 };
-
-interface SearchMaterials {
-  value: string | string[];
-  type: string | string[];
-  materialsNum?: number;
-}
 
 export const searchMaterials: RequestHandler<unknown, unknown, unknown, SearchMaterials> = async (req, res, next) => {
   const { value, type, materialsNum } = req.query;
@@ -230,31 +181,6 @@ export const createMaterial: RequestHandler<unknown, unknown, CreateMaterialBody
     next(error);
   }
 };
-
-interface UpdateMaterialBody {
-  _id: string,
-  author: { 
-    name: string,
-    photoUrl?: string,
-    organization: string,
-    position: string,
-  },
-  type: string,
-  title?: string,
-  content: string,
-  preview?: string,
-  image?: string,
-  isMain?: boolean,
-  status: string,
-  views: number,
-  likes: string[],
-  publicationDate: string | any,
-  comments: {
-    user: string,
-    message: string
-  }[],
-  labels: string[]
-}
 
 export const updateMaterial: RequestHandler<unknown, unknown, UpdateMaterialBody, unknown> = async (req, res, next) => {
   const materialToUpdate = req.body;

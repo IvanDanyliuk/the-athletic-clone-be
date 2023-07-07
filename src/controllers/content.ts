@@ -2,21 +2,8 @@ import { RequestHandler } from 'express';
 import mongoose from 'mongoose';
 import createHttpError from 'http-errors';
 import ContentSectionModel from '../models/content';
-import { MaterialType } from '../models/material';
+import { CreateContentSectionBody, UpdateContentSectionBody } from '../types/content';
 
-
-interface CreateContentSectionBody {
-  name: string,
-  maxLength: number,
-  materials: MaterialType[]
-}
-
-interface UpdateContentSectionBody {
-  _id: string,
-  name: string,
-  maxLength: number,
-  materials: MaterialType[]
-}
 
 export const getContentSections: RequestHandler = async (req, res, next) => {
   try {
