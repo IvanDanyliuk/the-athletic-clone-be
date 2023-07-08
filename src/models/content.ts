@@ -1,5 +1,6 @@
 import { Schema, model, InferSchemaType } from 'mongoose';
 
+
 const contentSectionSchema = new Schema({
   name: { type: String, required: true },
   maxLength: { type: String, required: true },
