@@ -153,8 +153,6 @@ export const getRecentMatches: RequestHandler<unknown, unknown, unknown, GetRece
         }).games
       })));
 
-    console.log(schedules)
-
     res.status(200).json(schedules)
   } catch (error) {
     next(error);
