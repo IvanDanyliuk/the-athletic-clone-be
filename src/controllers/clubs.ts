@@ -2,37 +2,47 @@ import { RequestHandler } from 'express';
 import mongoose from 'mongoose';
 import createHttpError from 'http-errors';
 import ClubModel from '../models/club';
-import { filterClubs, sortClubs } from '../util/helpers';
 import { CreateClubBody, GetAllClubsQuery, UpdateClubBody } from '../types/clubs';
 
 
 export const getClubs: RequestHandler<unknown, unknown, unknown, GetAllClubsQuery> = async (req, res, next) => {
   const { page, itemsPerPage, filterData, sortData } = req.query;
+
+  const order = !sortData || sortData.order === 'desc' ? -1 : 1;
+  const sortIndicator = sortData ? sortData.indicator : 'createdAt';
+
   try {
-    const data = await ClubModel.find().sort({ createdAt: -1 }).exec();
+    
+    const data = await ClubModel.aggregate([
+      { 
+        $match: {
+          $expr: {
+            $cond: {
+              if: filterData,
+              then: { $eq: ['$country', filterData?.country] },
+              else: true
+            }
+          }
+        } 
+      },
+      {
+        $sort: {
+          [sortIndicator]: order,
+          createdAt: -1
+        }
+      },
+      { $skip: +page * +itemsPerPage },
+      { $limit: +itemsPerPage }
+    ])
+    .exec();
 
-    let response;
-
-    if(sortData) {
-      response = sortClubs(data, sortData);
-    }
-
-    if(filterData) {
-      response = filterClubs(data, filterData);
-    }
-
-    if(filterData && sortData) {
-      const filteredData = filterClubs(data, filterData);
-      response = sortClubs(filteredData, sortData);
-    }
-
-    if(!filterData && !sortData) {
-      response = data;
-    }
+    const count = filterData ? 
+      await ClubModel.countDocuments({ 'country': filterData.country }) : 
+      await ClubModel.countDocuments({});
 
     res.status(200).json({
-      clubs: response?.slice(+itemsPerPage * +page, +itemsPerPage * (+page + 1)),
-      clubsCount: response ? response.length : data.length
+      clubs: data,
+      clubsCount: count
     });  
   } catch (error) {
     next(error)
