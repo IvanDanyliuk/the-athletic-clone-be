@@ -124,7 +124,7 @@ export const updateClub: RequestHandler<unknown, unknown, UpdateClubBody, unknow
 };
 
 export const deleteClub: RequestHandler = async (req, res, next) => {
-  const { id, page, itemsPerPage } = req.query;
+  const { id } = req.query;
   
   try {
     if(!mongoose.isValidObjectId(id)) {
