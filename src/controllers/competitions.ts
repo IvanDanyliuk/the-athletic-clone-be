@@ -126,7 +126,7 @@ export const updateCompetition: RequestHandler<unknown, unknown, UpdateCompetiti
 };
 
 export const deleteCompetition: RequestHandler = async (req, res, next) => {
-  const { id, page, itemsPerPage } = req.query;
+  const { id } = req.query;
 
   try {
     if(!mongoose.isValidObjectId(id)) {
@@ -134,13 +134,7 @@ export const deleteCompetition: RequestHandler = async (req, res, next) => {
     }
 
     await CompetitionModel.findByIdAndDelete(id);
-
-    const data = await CompetitionModel.find().sort({ createdAt: -1 }).exec();
-
-    res.status(200).json({
-      competitions: data?.slice(+itemsPerPage! * +page!, +itemsPerPage! * (+page! + 1)),
-      competitionsCount: data.length
-    });
+    res.sendStatus(204);
   } catch (error) {
     next(error);
   }
