@@ -132,12 +132,7 @@ export const deleteClub: RequestHandler = async (req, res, next) => {
     }
 
     await ClubModel.findByIdAndDelete(id);
-    const data = await ClubModel.find().sort({ createdAt: -1 }).exec();
-
-    res.status(200).json({
-      clubs: data?.slice(+itemsPerPage! * +page!, +itemsPerPage! * (+page! + 1)),
-      clubsCount: data.length
-    });
+    res.sendStatus(204);
   } catch (error) {
     next(error);
   }
