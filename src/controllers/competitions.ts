@@ -3,38 +3,40 @@ import mongoose from 'mongoose';
 import createHttpError from 'http-errors';
 import CompetitionModel from '../models/competition';
 import ClubModel from '../models/club';
-import { filterCompetitions, sortCompetitions } from '../util/helpers';
 import { CreateCompetitionBody, GetAllCompetitionsQuery, UpdateCompetitionBody } from '../types/competitions';
 
 
 export const getCompetitions: RequestHandler<unknown, unknown, unknown, GetAllCompetitionsQuery> = async (req, res, next) => {
   const { page, itemsPerPage, filterData, sortData } = req.query;
+
+  const order = !sortData || sortData.order === 'desc' ? -1 : 1;
+  const sortIndicator = sortData ? sortData.indicator : 'createdAt';
+
+  const query = filterData?.country && filterData.type ? 
+    { country: filterData.country, type: filterData.type } :
+    filterData?.country === '' && filterData.type ? 
+      { type: filterData.type } : 
+      filterData?.type === '' && filterData.country ?
+        { country: filterData.country } : 
+        {};
+
   try {
-    const data = await CompetitionModel.find().sort({ createdAt: -1 }).populate('clubs').exec();
+    const data = await CompetitionModel
+      .find(query)
+      .populate('clubs')
+      .sort({ [sortIndicator]: order })
+      .skip(+page * +itemsPerPage)
+      .limit(+itemsPerPage)
+      .exec();
 
-    let response;
-
-    if(sortData) {
-      response = sortCompetitions(data, sortData);
-    }
-
-    if(filterData) {
-      response = filterCompetitions(data, filterData);
-    }
-
-    if(filterData && sortData) {
-      const filteredData = filterCompetitions(data, filterData);
-      response = sortCompetitions(filteredData, sortData);
-    }
-
-    if(!filterData && !sortData) {
-      response = data;
-    }
+    const count = filterData ? 
+      await CompetitionModel.countDocuments({ 'country': filterData.country, 'type': filterData.type }) : 
+      await CompetitionModel.countDocuments({});
 
     res.status(200).json({
-      competitions: response?.slice(+itemsPerPage * +page, +itemsPerPage * (+page + 1)),
-      competitionsCount: response ? response.length : data.length
-    });  
+      competitions: data,
+      competitionsCount: count
+    });
   } catch (error) {
     next(error);
   }

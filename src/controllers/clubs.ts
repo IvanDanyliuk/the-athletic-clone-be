@@ -11,30 +11,17 @@ export const getClubs: RequestHandler<unknown, unknown, unknown, GetAllClubsQuer
   const order = !sortData || sortData.order === 'desc' ? -1 : 1;
   const sortIndicator = sortData ? sortData.indicator : 'createdAt';
 
+  const query = filterData?.country ? 
+    { country: filterData.country } :
+    {};
+
   try {
-    
-    const data = await ClubModel.aggregate([
-      { 
-        $match: {
-          $expr: {
-            $cond: {
-              if: filterData,
-              then: { $eq: ['$country', filterData?.country] },
-              else: true
-            }
-          }
-        } 
-      },
-      {
-        $sort: {
-          [sortIndicator]: order,
-          createdAt: -1
-        }
-      },
-      { $skip: +page * +itemsPerPage },
-      { $limit: +itemsPerPage }
-    ])
-    .exec();
+    const data = await ClubModel
+      .find(query)
+      .sort({ [sortIndicator]: order })
+      .skip(+page * +itemsPerPage)
+      .limit(+itemsPerPage)
+      .exec()
 
     const count = filterData ? 
       await ClubModel.countDocuments({ 'country': filterData.country }) : 
