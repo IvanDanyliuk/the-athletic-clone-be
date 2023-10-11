@@ -13,18 +13,24 @@ import { ISchedulesFilterData, ISchedulesSortData } from '../types/schedules';
 import { IUserFilterData, IUserSortData } from '../types/users';
 
 
-export const filterMaterials = (materials: MaterialType[], filterData: IMaterialsFilterData) => {
-  const { author, type, dateFrom, dateTo } = filterData;
+export const setQueryParams = (params: any) => {
+  const modifiedParams = Object.entries(params).filter(item => item[1] !== '');
+  return Object.fromEntries(modifiedParams);
+}
 
-  return materials
-    .filter(material => type ? material.type == type : true)
-    .filter(material => author ? material.author?.userId == author : true)
-    .filter(material => dateFrom && dateTo ? 
-      Date.parse(material.createdAt.toISOString()) >= Date.parse(dateFrom!) && 
-      Date.parse(material.createdAt.toISOString()) <= Date.parse(dateTo!) 
-      : true
-    );
-};
+
+// export const filterMaterials = (materials: MaterialType[], filterData: IMaterialsFilterData) => {
+//   const { author, type, dateFrom, dateTo } = filterData;
+
+//   return materials
+//     .filter(material => type ? material.type == type : true)
+//     .filter(material => author ? material.author?.userId == author : true)
+//     .filter(material => dateFrom && dateTo ? 
+//       Date.parse(material.createdAt.toISOString()) >= Date.parse(dateFrom!) && 
+//       Date.parse(material.createdAt.toISOString()) <= Date.parse(dateTo!) 
+//       : true
+//     );
+// };
 
 
 export const sortMaterials = (materials: MaterialType[], sortData: IMaterialsSortData) => {

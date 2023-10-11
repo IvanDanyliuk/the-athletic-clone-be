@@ -5,7 +5,7 @@ import MaterialModel from '../models/material';
 import CompetitionModel from '../models/competition';
 import ClubModel from '../models/club';
 import UserModel from '../models/user';
-import { filterMaterials, sortMaterials } from '../util/helpers';
+import { setQueryParams } from '../util/helpers';
 import { 
   CreateMaterialBody, GetAllMaterialsQuery, GetFilterValues, GetRecentMaterialsQuery, 
   GetSecondaryMaterialsQuery, SearchMaterials, UpdateMaterialBody 
@@ -14,31 +14,27 @@ import {
 
 export const getMaterials: RequestHandler<unknown, unknown, unknown, GetAllMaterialsQuery> = async (req, res, next) => {
   const { page, itemsPerPage, filterData, sortData } = req.query;
+
+  const order = !sortData || sortData.order === 'desc' ? -1 : 1;
+  const sortIndicator = sortData ? sortData.indicator : 'createdAt';
+  const query = filterData ? setQueryParams(filterData) : {};
+
   try {
-    const data = await MaterialModel.find().sort({ createdAt: -1 }).exec();
+    const data = await MaterialModel
+      .find(query)
+      .sort({ [sortIndicator]: order })
+      .skip(+page * +itemsPerPage)
+      .limit(+itemsPerPage)
+      .exec();
 
-    let response;
+    // AUTHOR: change the Author model, set the Author 
+    // field as a reference to the User model
 
-    if(sortData) {
-      response = sortMaterials(data, sortData);
-    }
-
-    if(filterData) {
-      response = filterMaterials(data, filterData);
-    }
-
-    if(filterData && sortData) {
-      const filteredData = filterMaterials(data, filterData);
-      response = sortMaterials(filteredData, sortData);
-    }
-
-    if(!filterData && !sortData) {
-      response = data;
-    }
+    const count = await MaterialModel.countDocuments(query);
 
     res.status(200).json({
-      materials: response?.slice(+itemsPerPage * +page, +itemsPerPage * (+page + 1)),
-      materialsCount: response ? response.length : data.length 
+      materials: data,
+      materialsCount: count 
     });
   } catch (error) {
     next(error);
@@ -212,7 +208,7 @@ export const updateMaterial: RequestHandler<unknown, unknown, UpdateMaterialBody
 };
 
 export const deleteMaterial: RequestHandler = async (req, res, next) => {
-  const { id, page, itemsPerPage, userId } = req.query;
+  const { id } = req.query;
   
   try {
     if(!mongoose.isValidObjectId(id)) {
@@ -220,14 +216,16 @@ export const deleteMaterial: RequestHandler = async (req, res, next) => {
     }
 
     await MaterialModel.findByIdAndDelete(id);
-    const data = userId ? 
-      await MaterialModel.find({ 'author.userId': userId }).sort({ createdAt: -1 }).exec() : 
-      await MaterialModel.find().sort({ createdAt: -1 }).exec();
+    // const data = userId ? 
+    //   await MaterialModel.find({ 'author.userId': userId }).sort({ createdAt: -1 }).exec() : 
+    //   await MaterialModel.find().sort({ createdAt: -1 }).exec();
 
-    res.status(200).json({
-      materials: data?.slice(+itemsPerPage! * +page!, +itemsPerPage! * (+page! + 1)),
-      materialsCount: data.length
-    });
+    // res.status(200).json({
+    //   materials: data?.slice(+itemsPerPage! * +page!, +itemsPerPage! * (+page! + 1)),
+    //   materialsCount: data.length
+    // });
+
+    res.sendStatus(204);
   } catch (error) {
     next(error);
   }

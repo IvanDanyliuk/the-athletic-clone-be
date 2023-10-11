@@ -4,6 +4,7 @@ import createHttpError from 'http-errors';
 import CompetitionModel from '../models/competition';
 import ClubModel from '../models/club';
 import { CreateCompetitionBody, GetAllCompetitionsQuery, UpdateCompetitionBody } from '../types/competitions';
+import { setQueryParams } from '../util/helpers';
 
 
 export const getCompetitions: RequestHandler<unknown, unknown, unknown, GetAllCompetitionsQuery> = async (req, res, next) => {
@@ -11,14 +12,7 @@ export const getCompetitions: RequestHandler<unknown, unknown, unknown, GetAllCo
 
   const order = !sortData || sortData.order === 'desc' ? -1 : 1;
   const sortIndicator = sortData ? sortData.indicator : 'createdAt';
-
-  const query = filterData?.country && filterData.type ? 
-    { country: filterData.country, type: filterData.type } :
-    filterData?.country === '' && filterData.type ? 
-      { type: filterData.type } : 
-      filterData?.type === '' && filterData.country ?
-        { country: filterData.country } : 
-        {};
+  const query = filterData ? setQueryParams(filterData) : {};
 
   try {
     const data = await CompetitionModel
@@ -29,9 +23,7 @@ export const getCompetitions: RequestHandler<unknown, unknown, unknown, GetAllCo
       .limit(+itemsPerPage)
       .exec();
 
-    const count = filterData ? 
-      await CompetitionModel.countDocuments({ 'country': filterData.country, 'type': filterData.type }) : 
-      await CompetitionModel.countDocuments({});
+    const count = await CompetitionModel.countDocuments(query);
 
     res.status(200).json({
       competitions: data,

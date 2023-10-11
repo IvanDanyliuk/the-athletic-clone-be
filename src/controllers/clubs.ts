@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import createHttpError from 'http-errors';
 import ClubModel from '../models/club';
 import { CreateClubBody, GetAllClubsQuery, UpdateClubBody } from '../types/clubs';
+import { setQueryParams } from '../util/helpers';
 
 
 export const getClubs: RequestHandler<unknown, unknown, unknown, GetAllClubsQuery> = async (req, res, next) => {
@@ -10,10 +11,7 @@ export const getClubs: RequestHandler<unknown, unknown, unknown, GetAllClubsQuer
 
   const order = !sortData || sortData.order === 'desc' ? -1 : 1;
   const sortIndicator = sortData ? sortData.indicator : 'createdAt';
-
-  const query = filterData?.country ? 
-    { country: filterData.country } :
-    {};
+  const query = filterData ? setQueryParams(filterData) : {}
 
   try {
     const data = await ClubModel
