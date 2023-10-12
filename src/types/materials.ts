@@ -1,13 +1,15 @@
 import { Order } from './common';
+import { UpdateUserBody } from './users';
 
 
 export interface CreateMaterialBody {
-  author: { 
-    name: string;
-    photoUrl?: string;
-    organization: string;
-    position: string;
-  };
+  // author: { 
+  //   name: string;
+  //   photoUrl?: string;
+  //   organization: string;
+  //   position: string;
+  // };
+  author: string;
   type: string;
   title?: string;
   content: string;
@@ -54,12 +56,13 @@ export interface SearchMaterials {
 
 export interface UpdateMaterialBody {
   _id: string;
-  author: { 
-    name: string;
-    photoUrl?: string;
-    organization: string;
-    position: string;
-  };
+  // author: { 
+  //   name: string;
+  //   photoUrl?: string;
+  //   organization: string;
+  //   position: string;
+  // };
+  author: UpdateUserBody;
   type: string;
   title?: string;
   content: string;
