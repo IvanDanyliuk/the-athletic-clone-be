@@ -22,15 +22,15 @@ export const getMaterials: RequestHandler<unknown, unknown, unknown, GetAllMater
   try {
     const data = await MaterialModel
       .find(query)
+      .populate('author')
       .sort({ [sortIndicator]: order })
       .skip(+page * +itemsPerPage)
       .limit(+itemsPerPage)
       .exec();
 
-    // AUTHOR: change the Author model, set the Author 
-    // field as a reference to the User model
-
     const count = await MaterialModel.countDocuments(query);
+
+    console.log('GET MATERIALS', data)
 
     res.status(200).json({
       materials: data,
