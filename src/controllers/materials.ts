@@ -134,20 +134,34 @@ export const getSearchValues: RequestHandler<unknown, unknown, unknown, GetFilte
 
 export const searchMaterials: RequestHandler<unknown, unknown, unknown, SearchMaterials> = async (req, res, next) => {
   const { value, type, materialsNum } = req.query;
-  const requestValue = typeof value === 'string' ? new RegExp(value) : value[0];
-  
-  try {
-    const materials = await MaterialModel.find({ 
+
+  const query = typeof value === 'string' ? 
+    {
       $and: [
-        { 
+        {
           $or: [
-            { labels: { $in: value } }, 
-            // { 'author.userId': { $in: value } }, 
-            { title: { $regex: requestValue, $options: 'i' } }
-          ] 
-        }, 
+            { labels: { $in: value } },
+            { title: { $regex: new RegExp(value), $options: 'i' } },
+          ]
+        },
         { type }
-      ] })
+      ]
+    } : 
+    {
+      $and: [
+        {
+          $or: [
+            { labels: { $in: value.filter(item => !mongoose.isValidObjectId(item)) } }, 
+            { author: { $in: value.filter(item => mongoose.isValidObjectId(item)) } },
+          ]
+        },
+        { type }
+      ]
+    };
+
+  try {
+    const materials = await MaterialModel
+      .find(query)
       .populate('author')
       .sort({ createdAt: -1 })
       .exec();

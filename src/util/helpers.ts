@@ -7,7 +7,7 @@ import { UserType } from '../models/user';
 import { IClubsFilterData, IClubsSortData } from '../types/clubs';
 import { Order } from '../types/common';
 import { ICompetitionsFilterData, ICompetitionsSortData } from '../types/competitions';
-import { IMaterialsFilterData, IMaterialsSortData } from '../types/materials';
+import { IMaterialsSortData } from '../types/materials';
 import { IPlayersFilterData, IPlayersSortData } from '../types/players';
 import { ISchedulesFilterData, ISchedulesSortData } from '../types/schedules';
 import { IUserFilterData, IUserSortData } from '../types/users';
@@ -17,21 +17,6 @@ export const setQueryParams = (params: any) => {
   const modifiedParams = Object.entries(params).filter(item => item[1] !== '');
   return Object.fromEntries(modifiedParams);
 }
-
-
-// export const filterMaterials = (materials: MaterialType[], filterData: IMaterialsFilterData) => {
-//   const { author, type, dateFrom, dateTo } = filterData;
-
-//   return materials
-//     .filter(material => type ? material.type == type : true)
-//     .filter(material => author ? material.author?.userId == author : true)
-//     .filter(material => dateFrom && dateTo ? 
-//       Date.parse(material.createdAt.toISOString()) >= Date.parse(dateFrom!) && 
-//       Date.parse(material.createdAt.toISOString()) <= Date.parse(dateTo!) 
-//       : true
-//     );
-// };
-
 
 export const sortMaterials = (materials: MaterialType[], sortData: IMaterialsSortData) => {
   const { indicator, order } = sortData;
