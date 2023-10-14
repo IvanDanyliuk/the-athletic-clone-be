@@ -216,7 +216,7 @@ export const updateSchedule: RequestHandler<unknown, unknown, UpdateScheduleBody
 };
 
 export const deleteSchedule: RequestHandler = async (req, res, next) => {
-  const { id, page, itemsPerPage } = req.query;
+  const { id } = req.query;
 
   try {
     if(!mongoose.isValidObjectId(id)) {
@@ -224,29 +224,7 @@ export const deleteSchedule: RequestHandler = async (req, res, next) => {
     }
 
     await ScheduleModel.findByIdAndDelete(id);
-
-    const data = await ScheduleModel
-      .find()
-      .sort({ createdAt: -1 })
-      .populate([
-        { 
-          path: 'competition',
-          populate: { path: 'clubs' }
-        },
-        {
-          path: 'fixture',
-          populate: [
-            { path: 'games.home.club' },
-            { path: 'games.away.club' }
-          ]
-        }
-      ])
-      .exec();
-
-    res.status(200).json({
-      schedules: data?.slice(+itemsPerPage! * +page!, +itemsPerPage! * (+page! + 1)),
-      schedulesCount: data.length
-    });
+    res.sendStatus(204);
   } catch (error) {
     next(error);
   }
