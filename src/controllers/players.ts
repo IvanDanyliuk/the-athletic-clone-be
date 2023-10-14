@@ -108,7 +108,7 @@ export const updatePlayer: RequestHandler<unknown, unknown, UpdatePlayerBody, un
 };
 
 export const deletePlayer: RequestHandler = async (req, res, next) => {
-  const { id, page, itemsPerPage } = req.query;
+  const { id } = req.query;
 
   try {
     if(!mongoose.isValidObjectId(id)) {
@@ -116,13 +116,7 @@ export const deletePlayer: RequestHandler = async (req, res, next) => {
     }
 
     await PlayerModel.findByIdAndDelete(id);
-    
-    const data = await PlayerModel.find().sort({ createdAt: -1 }).exec();
-
-    res.status(200).json({
-      players: data?.slice(+itemsPerPage! * +page!, +itemsPerPage! * (+page! + 1)),
-      playersCount: data.length
-    });
+    res.sendStatus(204);
   } catch (error) {
     next(error);
   }
