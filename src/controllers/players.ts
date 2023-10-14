@@ -3,43 +3,32 @@ import mongoose from 'mongoose';
 import createHttpError from 'http-errors';
 import PlayerModel from '../models/player';
 import ClubModel from '../models/club';
-import { filterPlayers, sortPlayers } from '../util/helpers';
+import { setQueryParams } from '../util/helpers';
 import { CreatePlayerBody, GetAllPlayersQuery, UpdatePlayerBody } from '../types/players';
 
 
 export const getPlayers: RequestHandler<unknown, unknown, unknown, GetAllPlayersQuery> = async (req, res, next) => {
   const { page, itemsPerPage, filterData, sortData } = req.query;
 
+  const order = !sortData || sortData.order === 'desc' ? -1 : 1;
+  const sortIndicator = sortData ? sortData.indicator : 'createdAt';
+  const query = filterData ? setQueryParams(filterData) : {};
+
   try {
-    const data = await PlayerModel.find().populate('club').sort({ createdAt: -1 }).exec();
-
-    let response;
-
-    if(sortData) {
-      response = sortPlayers(data, sortData);
-    }
-
-    if(filterData) {
-      response = filterPlayers(data, filterData);
-    }
-
-    if(filterData && sortData) {
-      const filteredData = filterPlayers(data, filterData);
-      response = sortPlayers(filteredData, sortData);
-    }
-
-    if(!filterData && !sortData) {
-      response = data;
-    }
-
-    const players = !page && !itemsPerPage ? 
-      response : 
-      response?.slice(+itemsPerPage * +page, +itemsPerPage * (+page + 1));
+    const data = await PlayerModel
+      .find(query)
+      .populate('club')
+      .sort({ [sortIndicator]: order })
+      .skip(+page * +itemsPerPage)
+      .limit(+itemsPerPage)
+      .exec();
+    
+    const count = await PlayerModel.countDocuments(query);
 
     res.status(200).json({
-      players,
-      playersCount: response ? response.length : data.length
-    });
+      players: data,
+      playersCount: count
+    })
   } catch (error) {
     next(error);
   }
