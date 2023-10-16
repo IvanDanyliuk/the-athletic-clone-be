@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import createHttpError from 'http-errors';
 import UserModel from '../models/user';
 import bcrypt from 'bcrypt';
-import { filterUsers, sortUsers } from '../util/helpers';
+import { filterUsers, setQueryParams, sortUsers } from '../util/helpers';
 import { CreateUserBody, GetAllUsersQuery, LoginBody, SignUpBody, UpdateUserBody } from '../types/users';
 
 
@@ -176,32 +176,25 @@ export const getUsersByRole: RequestHandler = async (req, res, next) => {
 
 export const getAllUsers: RequestHandler<unknown, unknown, unknown, GetAllUsersQuery> = async (req, res, next) => {
   const { page, itemsPerPage, filterData, sortData } = req.query;
+
+  const order = !sortData || sortData.order === 'desc' ? -1 : 1;
+  const sortIndicator = sortData ? sortData.indicator : 'createdAt';
+  const query = filterData ? setQueryParams(filterData) : {};
+
   try {
-    const data = await UserModel.find().sort({ createdAt: -1 }).exec();
+    const data = await UserModel
+      .find(query)
+      .sort({ [sortIndicator]: order })
+      .skip(+page * +itemsPerPage)
+      .limit(+itemsPerPage)
+      .exec();
 
-    let response;
-
-    if(sortData) {
-      response = sortUsers(data, sortData);
-    }
-
-    if(filterData) {
-      response = filterUsers(data, filterData);
-    }
-
-    if(filterData && sortData) {
-      const filteredData = filterUsers(data, filterData);
-      response = sortUsers(filteredData, sortData);
-    }
-
-    if(!filterData && !sortData) {
-      response = data;
-    }
+    const count = await UserModel.countDocuments(query);
 
     res.status(200).json({
-      users: response?.slice(+itemsPerPage * +page, +itemsPerPage * (+page + 1)),
-      usersCount: response ? response.length : data.length 
-    });
+      users: data,
+      usersCount: count
+    })
   } catch (error) {
     next(error);
   }
