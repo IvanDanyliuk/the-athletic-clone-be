@@ -4,7 +4,7 @@ import createHttpError from 'http-errors';
 import ScheduleModel from '../models/schedule';
 import CompetitionModel from '../models/competition';
 import { CompetitionType } from '../models/competition';
-import { filterSchedules, setQueryParams, sortSchedules } from '../util/helpers';
+import { setQueryParams } from '../util/helpers';
 import { 
   CreateScheduleBody, GetAllSchedulesQuery, GetRecentMatchesQuery, 
   GetScheduleQuery, GetSchedulesByClubQuery, UpdateScheduleBody 
@@ -21,7 +21,7 @@ export const getSchedules: RequestHandler<unknown, unknown, unknown, GetAllSched
   const schedulesLimit = page && itemsPerPage ? +itemsPerPage : 0;
 
   try {
-    const data = await ScheduleModel
+    const schedules = await ScheduleModel
       .find(query)
       .populate([
         { 
@@ -41,12 +41,9 @@ export const getSchedules: RequestHandler<unknown, unknown, unknown, GetAllSched
       .limit(schedulesLimit)
       .exec();
 
-    const count = await ScheduleModel.countDocuments(query);
+    const schedulesCount = await ScheduleModel.countDocuments(query);
 
-    res.status(200).json({
-      schedules: data,
-      schedulesCount: count
-    });
+    res.status(200).json({ schedules, schedulesCount });
   } catch (error) {
     next(error);
   }

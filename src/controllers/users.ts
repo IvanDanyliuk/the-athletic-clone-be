@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import createHttpError from 'http-errors';
 import UserModel from '../models/user';
 import bcrypt from 'bcrypt';
-import { filterUsers, setQueryParams, sortUsers } from '../util/helpers';
+import { setQueryParams } from '../util/helpers';
 import { CreateUserBody, GetAllUsersQuery, LoginBody, SignUpBody, UpdateUserBody } from '../types/users';
 
 
@@ -182,19 +182,16 @@ export const getAllUsers: RequestHandler<unknown, unknown, unknown, GetAllUsersQ
   const query = filterData ? setQueryParams(filterData) : {};
 
   try {
-    const data = await UserModel
+    const users = await UserModel
       .find(query)
       .sort({ [sortIndicator]: order })
       .skip(+page * +itemsPerPage)
       .limit(+itemsPerPage)
       .exec();
 
-    const count = await UserModel.countDocuments(query);
+    const usersCount = await UserModel.countDocuments(query);
 
-    res.status(200).json({
-      users: data,
-      usersCount: count
-    })
+    res.status(200).json({ users, usersCount });
   } catch (error) {
     next(error);
   }

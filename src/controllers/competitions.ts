@@ -15,7 +15,7 @@ export const getCompetitions: RequestHandler<unknown, unknown, unknown, GetAllCo
   const query = filterData ? setQueryParams(filterData) : {};
 
   try {
-    const data = await CompetitionModel
+    const competitions = await CompetitionModel
       .find(query)
       .populate('clubs')
       .sort({ [sortIndicator]: order })
@@ -23,12 +23,9 @@ export const getCompetitions: RequestHandler<unknown, unknown, unknown, GetAllCo
       .limit(+itemsPerPage)
       .exec();
 
-    const count = await CompetitionModel.countDocuments(query);
+    const competitionsCount = await CompetitionModel.countDocuments(query);
 
-    res.status(200).json({
-      competitions: data,
-      competitionsCount: count
-    });
+    res.status(200).json({ competitions, competitionsCount });
   } catch (error) {
     next(error);
   }

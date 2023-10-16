@@ -20,7 +20,7 @@ export const getMaterials: RequestHandler<unknown, unknown, unknown, GetAllMater
   const query = filterData ? setQueryParams(filterData) : {};
 
   try {
-    const data = await MaterialModel
+    const materials = await MaterialModel
       .find(query)
       .populate('author')
       .sort({ [sortIndicator]: order })
@@ -28,12 +28,9 @@ export const getMaterials: RequestHandler<unknown, unknown, unknown, GetAllMater
       .limit(+itemsPerPage)
       .exec();
 
-    const count = await MaterialModel.countDocuments(query);
+    const materialsCount = await MaterialModel.countDocuments(query);
 
-    res.status(200).json({
-      materials: data,
-      materialsCount: count 
-    });
+    res.status(200).json({ materials, materialsCount });
   } catch (error) {
     next(error);
   }

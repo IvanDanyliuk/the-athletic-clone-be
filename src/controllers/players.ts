@@ -15,7 +15,7 @@ export const getPlayers: RequestHandler<unknown, unknown, unknown, GetAllPlayers
   const query = filterData ? setQueryParams(filterData) : {};
 
   try {
-    const data = await PlayerModel
+    const players = await PlayerModel
       .find(query)
       .populate('club')
       .sort({ [sortIndicator]: order })
@@ -23,12 +23,9 @@ export const getPlayers: RequestHandler<unknown, unknown, unknown, GetAllPlayers
       .limit(+itemsPerPage)
       .exec();
     
-    const count = await PlayerModel.countDocuments(query);
+    const playersCount = await PlayerModel.countDocuments(query);
 
-    res.status(200).json({
-      players: data,
-      playersCount: count
-    })
+    res.status(200).json({ players, playersCount });
   } catch (error) {
     next(error);
   }

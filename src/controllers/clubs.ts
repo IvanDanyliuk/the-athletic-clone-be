@@ -14,21 +14,18 @@ export const getClubs: RequestHandler<unknown, unknown, unknown, GetAllClubsQuer
   const query = filterData ? setQueryParams(filterData) : {}
 
   try {
-    const data = await ClubModel
+    const clubs = await ClubModel
       .find(query)
       .sort({ [sortIndicator]: order })
       .skip(+page * +itemsPerPage)
       .limit(+itemsPerPage)
       .exec()
 
-    const count = filterData ? 
+    const clubsCount = filterData ? 
       await ClubModel.countDocuments({ 'country': filterData.country }) : 
       await ClubModel.countDocuments({});
 
-    res.status(200).json({
-      clubs: data,
-      clubsCount: count
-    });  
+    res.status(200).json({ clubs, clubsCount });  
   } catch (error) {
     next(error)
   }
