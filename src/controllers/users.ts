@@ -11,11 +11,11 @@ export const getAuthenticatedUser: RequestHandler = async (req, res, next) => {
   const authenticatedUserId = req.session.userId;
 
   try {
-    if(!authenticatedUserId) {
-      throw(createHttpError(401, 'User not authenticated'));
-    }
-
-    const user = await UserModel.findById(authenticatedUserId).select('+email').exec();
+    const user = await UserModel
+      .findById(authenticatedUserId)
+      .select('+email')
+      .exec();
+      
     res.status(200).json(user);
   } catch (error) {
     next(error);
@@ -81,7 +81,10 @@ export const login: RequestHandler<unknown, unknown, LoginBody, unknown> = async
       throw(createHttpError(400, 'Parameters missing'));
     }
 
-    const user = await UserModel.findOne({ email }).select('+password +email').exec();
+    const user = await UserModel
+      .findOne({ email })
+      .select('+password +email')
+      .exec();
 
     if(!user) {
       throw(createHttpError(401, 'Invalid credentials'));
@@ -167,7 +170,11 @@ export const getUsersByRole: RequestHandler = async (req, res, next) => {
       throw(createHttpError(400, 'Provide a role'));
     }
 
-    const users = await UserModel.find({ role }).sort({ createdAt: -1 }).exec();
+    const users = await UserModel
+      .find({ role })
+      .sort({ createdAt: -1 })
+      .exec();
+      
     res.status(200).json(users);
   } catch (error) {
     next(error);

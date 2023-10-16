@@ -84,6 +84,7 @@ export const getSchedule: RequestHandler<unknown, unknown, unknown, GetScheduleQ
     if(!mongoose.isValidObjectId(leagueId)) {
       throw(createHttpError(400, 'Invalid schedule id'));
     }
+
     const schedule = await ScheduleModel
       .findOne({ $and: [{ season }, { competition: leagueId }] })
       .populate([
@@ -104,6 +105,7 @@ export const getSchedule: RequestHandler<unknown, unknown, unknown, GetScheduleQ
     if(!schedule) {
       createHttpError(404, 'Schedule not found');
     }
+
     res.status(200).json(schedule);
   } catch (error) {
     next(error);
@@ -185,9 +187,11 @@ export const updateSchedule: RequestHandler<unknown, unknown, UpdateScheduleBody
     if(!mongoose.isValidObjectId(scheduleToUpdate._id)) {
       throw(createHttpError(400, 'Invalid schedule id'));
     }
+
     if(!scheduleToUpdate.competition) {
       throw createHttpError(400, 'Schedule must have a competition');
     }
+
     if(!scheduleToUpdate.season) {
       throw createHttpError(400, 'Schedule must have a season value');
     }
@@ -206,6 +210,7 @@ export const updateSchedule: RequestHandler<unknown, unknown, UpdateScheduleBody
         ]
       }
     ]);
+
     res.status(200).json(response);
   } catch (error) {
     next(error);
@@ -221,6 +226,7 @@ export const deleteSchedule: RequestHandler = async (req, res, next) => {
     }
 
     await ScheduleModel.findByIdAndDelete(id);
+    
     res.sendStatus(204);
   } catch (error) {
     next(error);

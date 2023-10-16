@@ -58,9 +58,11 @@ export const getRecentMaterials: RequestHandler<unknown, unknown, unknown, GetRe
   const { materialsNumber, materialTypes } = req.query;
   try {
     const materials = await MaterialModel.find({ type: { $in: materialTypes } }).populate('author').sort({ createdAt: -1 }).exec();
+    
     if(!materials) {
       throw(createHttpError(400, 'Materials not found'));
     }
+
     const recentMaterials = materials.slice(0, materialsNumber);
     res.status(200).json(recentMaterials);
   } catch (error) {
@@ -94,6 +96,7 @@ export const getHomepageSecondaryMaterials: RequestHandler<unknown, unknown, unk
           { labels: { $in: leagues } }
         ]
        });
+       
     const leagueMaterials = leagues
       .map(leagueName => ({
         league: leagueName,

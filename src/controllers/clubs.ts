@@ -64,13 +64,16 @@ export const getClub: RequestHandler = async (req, res, next) => {
 
 export const createClub: RequestHandler<unknown, unknown, CreateClubBody,unknown> = async (req, res, next) => {
   const { fullName, commonName, shortName, country, clubLogoUrl, stadium } = req.body;
+  
   try {
     if(!fullName || !commonName || !shortName) {
       throw createHttpError(400, 'Club must have a full name, common name, and short name');
     }
+
     if(!country) {
       throw createHttpError(400, 'Club must have a country');
     }
+
     const newClub = await ClubModel.create({
       fullName,
       commonName,
@@ -79,6 +82,7 @@ export const createClub: RequestHandler<unknown, unknown, CreateClubBody,unknown
       clubLogoUrl,
       stadium
     });
+
     res.status(201).json(newClub);
   } catch (error) {
     next(error);
@@ -92,13 +96,17 @@ export const updateClub: RequestHandler<unknown, unknown, UpdateClubBody, unknow
     if(!mongoose.isValidObjectId(clubToUpdate._id)) {
       throw(createHttpError(400, 'Invalid club id'));
     }
+
     if(!clubToUpdate.fullName || !clubToUpdate.commonName || !clubToUpdate.shortName) {
       throw createHttpError(400, 'Club must have a full name, common name, and short name');
     }
+
     if(!clubToUpdate.country) {
       throw createHttpError(400, 'Club must have a country');
     }
+
     const updatedClub = await ClubModel.findByIdAndUpdate(clubToUpdate._id, clubToUpdate);
+    
     res.status(200).json(updatedClub);
   } catch (error) {
     next(error);

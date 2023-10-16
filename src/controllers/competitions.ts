@@ -51,7 +51,9 @@ export const getCompetition: RequestHandler = async (req, res, next) => {
     if(!mongoose.isValidObjectId(id)) {
       throw(createHttpError(400, 'Invalid competition id'));
     }
+
     const competition = await CompetitionModel.findById(id).populate('clubs');
+    
     if(!competition) {
       createHttpError(404, 'Competition not found');
     }
@@ -68,6 +70,7 @@ export const createCompetition: RequestHandler<unknown, unknown, CreateCompetiti
     if(!competition.fullName) {
       throw createHttpError(400, 'Competition must have a name');
     }
+    
     if(competition.clubs.length < 2) {
       throw createHttpError(400, 'Competition must have at least two clubs');
     }
@@ -93,9 +96,11 @@ export const updateCompetition: RequestHandler<unknown, unknown, UpdateCompetiti
     if(!mongoose.isValidObjectId(competitionToUpdate._id)) {
       throw(createHttpError(400, 'Invalid competition id'));
     }
+
     if(!competitionToUpdate.fullName) {
       throw createHttpError(400, 'Competition must have a name');
     }
+
     if(competitionToUpdate.clubs.length < 2) {
       throw createHttpError(400, 'Competition must have at least two clubs');
     }
@@ -109,7 +114,6 @@ export const updateCompetition: RequestHandler<unknown, unknown, UpdateCompetiti
     };
 
     const updatedCompetition = await CompetitionModel.findByIdAndUpdate(competitionToUpdate._id, addedCompetition).populate('clubs');
-    
     res.status(200).json(updatedCompetition);
   } catch (error) {
     next(error);
