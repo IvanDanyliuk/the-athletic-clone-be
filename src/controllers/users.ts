@@ -256,7 +256,7 @@ export const updatePassword: RequestHandler = async (req, res, next) => {
 };
 
 export const deleteUser: RequestHandler = async (req, res, next) => {
-  const { id, page, itemsPerPage } = req.query;
+  const { id } = req.query;
   
   try {
     if(!mongoose.isValidObjectId(id)) {
@@ -264,12 +264,8 @@ export const deleteUser: RequestHandler = async (req, res, next) => {
     }
 
     await UserModel.findByIdAndDelete(id);
-    const data = await UserModel.find().sort({ createdAt: -1 }).exec();
 
-    res.status(200).json({
-      users: data?.slice(+itemsPerPage! * +page!, +itemsPerPage! * (+page! + 1)),
-      usersCount: data.length
-    });
+    res.sendStatus(204);
   } catch (error) {
     next(error);
   }
