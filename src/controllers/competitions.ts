@@ -3,38 +3,29 @@ import mongoose from 'mongoose';
 import createHttpError from 'http-errors';
 import CompetitionModel from '../models/competition';
 import ClubModel from '../models/club';
-import { filterCompetitions, sortCompetitions } from '../util/helpers';
 import { CreateCompetitionBody, GetAllCompetitionsQuery, UpdateCompetitionBody } from '../types/competitions';
+import { setQueryParams } from '../util/helpers';
 
 
 export const getCompetitions: RequestHandler<unknown, unknown, unknown, GetAllCompetitionsQuery> = async (req, res, next) => {
   const { page, itemsPerPage, filterData, sortData } = req.query;
+
+  const order = !sortData || sortData.order === 'desc' ? -1 : 1;
+  const sortIndicator = sortData ? sortData.indicator : 'createdAt';
+  const query = filterData ? setQueryParams(filterData) : {};
+
   try {
-    const data = await CompetitionModel.find().sort({ createdAt: -1 }).populate('clubs').exec();
+    const competitions = await CompetitionModel
+      .find(query)
+      .populate('clubs')
+      .sort({ [sortIndicator]: order })
+      .skip(+page * +itemsPerPage)
+      .limit(+itemsPerPage)
+      .exec();
 
-    let response;
+    const competitionsCount = await CompetitionModel.countDocuments(query);
 
-    if(sortData) {
-      response = sortCompetitions(data, sortData);
-    }
-
-    if(filterData) {
-      response = filterCompetitions(data, filterData);
-    }
-
-    if(filterData && sortData) {
-      const filteredData = filterCompetitions(data, filterData);
-      response = sortCompetitions(filteredData, sortData);
-    }
-
-    if(!filterData && !sortData) {
-      response = data;
-    }
-
-    res.status(200).json({
-      competitions: response?.slice(+itemsPerPage * +page, +itemsPerPage * (+page + 1)),
-      competitionsCount: response ? response.length : data.length
-    });  
+    res.status(200).json({ competitions, competitionsCount });
   } catch (error) {
     next(error);
   }
@@ -126,7 +117,7 @@ export const updateCompetition: RequestHandler<unknown, unknown, UpdateCompetiti
 };
 
 export const deleteCompetition: RequestHandler = async (req, res, next) => {
-  const { id, page, itemsPerPage } = req.query;
+  const { id } = req.query;
 
   try {
     if(!mongoose.isValidObjectId(id)) {
@@ -134,13 +125,7 @@ export const deleteCompetition: RequestHandler = async (req, res, next) => {
     }
 
     await CompetitionModel.findByIdAndDelete(id);
-
-    const data = await CompetitionModel.find().sort({ createdAt: -1 }).exec();
-
-    res.status(200).json({
-      competitions: data?.slice(+itemsPerPage! * +page!, +itemsPerPage! * (+page! + 1)),
-      competitionsCount: data.length
-    });
+    res.sendStatus(204);
   } catch (error) {
     next(error);
   }

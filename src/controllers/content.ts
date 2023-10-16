@@ -7,7 +7,20 @@ import { CreateContentSectionBody, UpdateContentSectionBody } from '../types/con
 
 export const getContentSections: RequestHandler = async (req, res, next) => {
   try {
-    const contentSections = await ContentSectionModel.find().sort({ createdAt: -1 }).populate('materials').exec();
+    const contentSections = await ContentSectionModel
+      .find()
+      .sort({ createdAt: -1 })
+      .populate([
+        {
+          path: 'materials',
+        },
+        {
+          path: 'materials',
+          populate: 'author'
+        }
+      ])
+      .exec();
+      
     res.status(200).json(contentSections);
   } catch (error) {
     next(error);

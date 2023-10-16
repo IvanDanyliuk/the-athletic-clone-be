@@ -2,38 +2,30 @@ import { RequestHandler } from 'express';
 import mongoose from 'mongoose';
 import createHttpError from 'http-errors';
 import ClubModel from '../models/club';
-import { filterClubs, sortClubs } from '../util/helpers';
 import { CreateClubBody, GetAllClubsQuery, UpdateClubBody } from '../types/clubs';
+import { setQueryParams } from '../util/helpers';
 
 
 export const getClubs: RequestHandler<unknown, unknown, unknown, GetAllClubsQuery> = async (req, res, next) => {
   const { page, itemsPerPage, filterData, sortData } = req.query;
+
+  const order = !sortData || sortData.order === 'desc' ? -1 : 1;
+  const sortIndicator = sortData ? sortData.indicator : 'createdAt';
+  const query = filterData ? setQueryParams(filterData) : {}
+
   try {
-    const data = await ClubModel.find().sort({ createdAt: -1 }).exec();
+    const clubs = await ClubModel
+      .find(query)
+      .sort({ [sortIndicator]: order })
+      .skip(+page * +itemsPerPage)
+      .limit(+itemsPerPage)
+      .exec()
 
-    let response;
+    const clubsCount = filterData ? 
+      await ClubModel.countDocuments({ 'country': filterData.country }) : 
+      await ClubModel.countDocuments({});
 
-    if(sortData) {
-      response = sortClubs(data, sortData);
-    }
-
-    if(filterData) {
-      response = filterClubs(data, filterData);
-    }
-
-    if(filterData && sortData) {
-      const filteredData = filterClubs(data, filterData);
-      response = sortClubs(filteredData, sortData);
-    }
-
-    if(!filterData && !sortData) {
-      response = data;
-    }
-
-    res.status(200).json({
-      clubs: response?.slice(+itemsPerPage * +page, +itemsPerPage * (+page + 1)),
-      clubsCount: response ? response.length : data.length
-    });  
+    res.status(200).json({ clubs, clubsCount });  
   } catch (error) {
     next(error)
   }
@@ -114,7 +106,7 @@ export const updateClub: RequestHandler<unknown, unknown, UpdateClubBody, unknow
 };
 
 export const deleteClub: RequestHandler = async (req, res, next) => {
-  const { id, page, itemsPerPage } = req.query;
+  const { id } = req.query;
   
   try {
     if(!mongoose.isValidObjectId(id)) {
@@ -122,12 +114,7 @@ export const deleteClub: RequestHandler = async (req, res, next) => {
     }
 
     await ClubModel.findByIdAndDelete(id);
-    const data = await ClubModel.find().sort({ createdAt: -1 }).exec();
-
-    res.status(200).json({
-      clubs: data?.slice(+itemsPerPage! * +page!, +itemsPerPage! * (+page! + 1)),
-      clubsCount: data.length
-    });
+    res.sendStatus(204);
   } catch (error) {
     next(error);
   }

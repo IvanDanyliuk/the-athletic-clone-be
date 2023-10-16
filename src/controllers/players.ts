@@ -3,43 +3,29 @@ import mongoose from 'mongoose';
 import createHttpError from 'http-errors';
 import PlayerModel from '../models/player';
 import ClubModel from '../models/club';
-import { filterPlayers, sortPlayers } from '../util/helpers';
+import { setQueryParams } from '../util/helpers';
 import { CreatePlayerBody, GetAllPlayersQuery, UpdatePlayerBody } from '../types/players';
 
 
 export const getPlayers: RequestHandler<unknown, unknown, unknown, GetAllPlayersQuery> = async (req, res, next) => {
   const { page, itemsPerPage, filterData, sortData } = req.query;
 
+  const order = !sortData || sortData.order === 'desc' ? -1 : 1;
+  const sortIndicator = sortData ? sortData.indicator : 'createdAt';
+  const query = filterData ? setQueryParams(filterData) : {};
+
   try {
-    const data = await PlayerModel.find().populate('club').sort({ createdAt: -1 }).exec();
+    const players = await PlayerModel
+      .find(query)
+      .populate('club')
+      .sort({ [sortIndicator]: order })
+      .skip(+page * +itemsPerPage)
+      .limit(+itemsPerPage)
+      .exec();
+    
+    const playersCount = await PlayerModel.countDocuments(query);
 
-    let response;
-
-    if(sortData) {
-      response = sortPlayers(data, sortData);
-    }
-
-    if(filterData) {
-      response = filterPlayers(data, filterData);
-    }
-
-    if(filterData && sortData) {
-      const filteredData = filterPlayers(data, filterData);
-      response = sortPlayers(filteredData, sortData);
-    }
-
-    if(!filterData && !sortData) {
-      response = data;
-    }
-
-    const players = !page && !itemsPerPage ? 
-      response : 
-      response?.slice(+itemsPerPage * +page, +itemsPerPage * (+page + 1));
-
-    res.status(200).json({
-      players,
-      playersCount: response ? response.length : data.length
-    });
+    res.status(200).json({ players, playersCount });
   } catch (error) {
     next(error);
   }
@@ -119,7 +105,7 @@ export const updatePlayer: RequestHandler<unknown, unknown, UpdatePlayerBody, un
 };
 
 export const deletePlayer: RequestHandler = async (req, res, next) => {
-  const { id, page, itemsPerPage } = req.query;
+  const { id } = req.query;
 
   try {
     if(!mongoose.isValidObjectId(id)) {
@@ -127,13 +113,7 @@ export const deletePlayer: RequestHandler = async (req, res, next) => {
     }
 
     await PlayerModel.findByIdAndDelete(id);
-    
-    const data = await PlayerModel.find().sort({ createdAt: -1 }).exec();
-
-    res.status(200).json({
-      players: data?.slice(+itemsPerPage! * +page!, +itemsPerPage! * (+page! + 1)),
-      playersCount: data.length
-    });
+    res.sendStatus(204);
   } catch (error) {
     next(error);
   }

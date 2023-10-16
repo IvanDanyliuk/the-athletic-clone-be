@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import createHttpError from 'http-errors';
 import UserModel from '../models/user';
 import bcrypt from 'bcrypt';
-import { filterUsers, sortUsers } from '../util/helpers';
+import { setQueryParams } from '../util/helpers';
 import { CreateUserBody, GetAllUsersQuery, LoginBody, SignUpBody, UpdateUserBody } from '../types/users';
 
 
@@ -176,32 +176,22 @@ export const getUsersByRole: RequestHandler = async (req, res, next) => {
 
 export const getAllUsers: RequestHandler<unknown, unknown, unknown, GetAllUsersQuery> = async (req, res, next) => {
   const { page, itemsPerPage, filterData, sortData } = req.query;
+
+  const order = !sortData || sortData.order === 'desc' ? -1 : 1;
+  const sortIndicator = sortData ? sortData.indicator : 'createdAt';
+  const query = filterData ? setQueryParams(filterData) : {};
+
   try {
-    const data = await UserModel.find().sort({ createdAt: -1 }).exec();
+    const users = await UserModel
+      .find(query)
+      .sort({ [sortIndicator]: order })
+      .skip(+page * +itemsPerPage)
+      .limit(+itemsPerPage)
+      .exec();
 
-    let response;
+    const usersCount = await UserModel.countDocuments(query);
 
-    if(sortData) {
-      response = sortUsers(data, sortData);
-    }
-
-    if(filterData) {
-      response = filterUsers(data, filterData);
-    }
-
-    if(filterData && sortData) {
-      const filteredData = filterUsers(data, filterData);
-      response = sortUsers(filteredData, sortData);
-    }
-
-    if(!filterData && !sortData) {
-      response = data;
-    }
-
-    res.status(200).json({
-      users: response?.slice(+itemsPerPage * +page, +itemsPerPage * (+page + 1)),
-      usersCount: response ? response.length : data.length 
-    });
+    res.status(200).json({ users, usersCount });
   } catch (error) {
     next(error);
   }
@@ -263,7 +253,7 @@ export const updatePassword: RequestHandler = async (req, res, next) => {
 };
 
 export const deleteUser: RequestHandler = async (req, res, next) => {
-  const { id, page, itemsPerPage } = req.query;
+  const { id } = req.query;
   
   try {
     if(!mongoose.isValidObjectId(id)) {
@@ -271,12 +261,8 @@ export const deleteUser: RequestHandler = async (req, res, next) => {
     }
 
     await UserModel.findByIdAndDelete(id);
-    const data = await UserModel.find().sort({ createdAt: -1 }).exec();
 
-    res.status(200).json({
-      users: data?.slice(+itemsPerPage! * +page!, +itemsPerPage! * (+page! + 1)),
-      usersCount: data.length
-    });
+    res.sendStatus(204);
   } catch (error) {
     next(error);
   }

@@ -5,7 +5,7 @@ import MaterialModel from '../models/material';
 import CompetitionModel from '../models/competition';
 import ClubModel from '../models/club';
 import UserModel from '../models/user';
-import { filterMaterials, sortMaterials } from '../util/helpers';
+import { setQueryParams } from '../util/helpers';
 import { 
   CreateMaterialBody, GetAllMaterialsQuery, GetFilterValues, GetRecentMaterialsQuery, 
   GetSecondaryMaterialsQuery, SearchMaterials, UpdateMaterialBody 
@@ -14,32 +14,23 @@ import {
 
 export const getMaterials: RequestHandler<unknown, unknown, unknown, GetAllMaterialsQuery> = async (req, res, next) => {
   const { page, itemsPerPage, filterData, sortData } = req.query;
+
+  const order = !sortData || sortData.order === 'desc' ? -1 : 1;
+  const sortIndicator = sortData ? sortData.indicator : 'createdAt';
+  const query = filterData ? setQueryParams(filterData) : {};
+
   try {
-    const data = await MaterialModel.find().sort({ createdAt: -1 }).exec();
+    const materials = await MaterialModel
+      .find(query)
+      .populate('author')
+      .sort({ [sortIndicator]: order })
+      .skip(+page * +itemsPerPage)
+      .limit(+itemsPerPage)
+      .exec();
 
-    let response;
+    const materialsCount = await MaterialModel.countDocuments(query);
 
-    if(sortData) {
-      response = sortMaterials(data, sortData);
-    }
-
-    if(filterData) {
-      response = filterMaterials(data, filterData);
-    }
-
-    if(filterData && sortData) {
-      const filteredData = filterMaterials(data, filterData);
-      response = sortMaterials(filteredData, sortData);
-    }
-
-    if(!filterData && !sortData) {
-      response = data;
-    }
-
-    res.status(200).json({
-      materials: response?.slice(+itemsPerPage * +page, +itemsPerPage * (+page + 1)),
-      materialsCount: response ? response.length : data.length 
-    });
+    res.status(200).json({ materials, materialsCount });
   } catch (error) {
     next(error);
   }
@@ -52,7 +43,7 @@ export const getMaterial: RequestHandler = async (req, res, next) => {
       throw(createHttpError(400, 'Invalid material id'));
     }
 
-    const material = await MaterialModel.findById(id).exec();
+    const material = await MaterialModel.findById(id).populate('author').exec();
     if(!material) {
       createHttpError(404, 'Material not found');
     }
@@ -66,7 +57,7 @@ export const getMaterial: RequestHandler = async (req, res, next) => {
 export const getRecentMaterials: RequestHandler<unknown, unknown, unknown, GetRecentMaterialsQuery> = async (req, res, next) => {
   const { materialsNumber, materialTypes } = req.query;
   try {
-    const materials = await MaterialModel.find({ type: { $in: materialTypes } }).sort({ createdAt: -1 }).exec();
+    const materials = await MaterialModel.find({ type: { $in: materialTypes } }).populate('author').sort({ createdAt: -1 }).exec();
     if(!materials) {
       throw(createHttpError(400, 'Materials not found'));
     }
@@ -82,15 +73,17 @@ export const getHomepageSecondaryMaterials: RequestHandler<unknown, unknown, unk
   try {
     const topMaterials = await MaterialModel
       .find({ type: { $in: ['article', 'note'] } })
+      .populate('author')
       .sort({ likes: -1 })
       .exec();
 
     const latestPosts = await MaterialModel
       .find({ type: { $in: ['post'] } })
+      .populate('author')
       .sort({ createdAt: -1 })
       .exec();
 
-    const mustReadArticle = await MaterialModel.findOne({ isMain: true });
+    const mustReadArticle = await MaterialModel.findOne({ isMain: true }).populate('author');
 
     const availableLeagues = await CompetitionModel.find().exec();
     const leagues = availableLeagues.map(league => league.fullName);
@@ -138,19 +131,35 @@ export const getSearchValues: RequestHandler<unknown, unknown, unknown, GetFilte
 
 export const searchMaterials: RequestHandler<unknown, unknown, unknown, SearchMaterials> = async (req, res, next) => {
   const { value, type, materialsNum } = req.query;
-  const requestValue = typeof value === 'string' ? new RegExp(value) : value[0];
-  try {
-    const materials = await MaterialModel.find({ 
+
+  const query = typeof value === 'string' ? 
+    {
       $and: [
-        { 
+        {
           $or: [
-            { labels: { $in: value } }, 
-            { 'author.userId': { $in: value } }, 
-            { title: { $regex: requestValue, $options: 'i' } }
-          ] 
-        }, 
+            { labels: { $in: value } },
+            { title: { $regex: new RegExp(value), $options: 'i' } },
+          ]
+        },
         { type }
-      ] })
+      ]
+    } : 
+    {
+      $and: [
+        {
+          $or: [
+            { labels: { $in: value.filter(item => !mongoose.isValidObjectId(item)) } }, 
+            { author: { $in: value.filter(item => mongoose.isValidObjectId(item)) } },
+          ]
+        },
+        { type }
+      ]
+    };
+
+  try {
+    const materials = await MaterialModel
+      .find(query)
+      .populate('author')
       .sort({ createdAt: -1 })
       .exec();
     
@@ -197,11 +206,11 @@ export const updateMaterial: RequestHandler<unknown, unknown, UpdateMaterialBody
     if(materialToUpdate.isMain) {
       const mainMaterial = await MaterialModel.find({ isMain: true }).exec();
       if(mainMaterial) {
-        await MaterialModel.findByIdAndUpdate(mainMaterial, { ...mainMaterial, isMain: false });
+        await MaterialModel.findByIdAndUpdate(mainMaterial, { ...mainMaterial, isMain: false, author: materialToUpdate.author._id });
       }
     }
 
-    await MaterialModel.findByIdAndUpdate(materialToUpdate._id, materialToUpdate);
+    await MaterialModel.findByIdAndUpdate(materialToUpdate._id, { ...materialToUpdate, author: materialToUpdate.author._id });
 
     const updatedMaterial = await MaterialModel.findById(materialToUpdate._id).lean().exec();
 
@@ -212,7 +221,7 @@ export const updateMaterial: RequestHandler<unknown, unknown, UpdateMaterialBody
 };
 
 export const deleteMaterial: RequestHandler = async (req, res, next) => {
-  const { id, page, itemsPerPage, userId } = req.query;
+  const { id } = req.query;
   
   try {
     if(!mongoose.isValidObjectId(id)) {
@@ -220,14 +229,8 @@ export const deleteMaterial: RequestHandler = async (req, res, next) => {
     }
 
     await MaterialModel.findByIdAndDelete(id);
-    const data = userId ? 
-      await MaterialModel.find({ 'author.userId': userId }).sort({ createdAt: -1 }).exec() : 
-      await MaterialModel.find().sort({ createdAt: -1 }).exec();
 
-    res.status(200).json({
-      materials: data?.slice(+itemsPerPage! * +page!, +itemsPerPage! * (+page! + 1)),
-      materialsCount: data.length
-    });
+    res.sendStatus(204);
   } catch (error) {
     next(error);
   }

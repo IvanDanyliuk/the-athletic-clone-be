@@ -4,7 +4,7 @@ import createHttpError from 'http-errors';
 import ScheduleModel from '../models/schedule';
 import CompetitionModel from '../models/competition';
 import { CompetitionType } from '../models/competition';
-import { filterSchedules, sortSchedules } from '../util/helpers';
+import { setQueryParams } from '../util/helpers';
 import { 
   CreateScheduleBody, GetAllSchedulesQuery, GetRecentMatchesQuery, 
   GetScheduleQuery, GetSchedulesByClubQuery, UpdateScheduleBody 
@@ -13,10 +13,16 @@ import {
 
 export const getSchedules: RequestHandler<unknown, unknown, unknown, GetAllSchedulesQuery> = async (req, res, next) => {
   const { page, itemsPerPage, filterData, sortData } = req.query;
+
+  const order = !sortData || sortData.order === 'desc' ? -1 : 1;
+  const sortIndicator = sortData ? sortData.indicator : 'createdAt';
+  const query = filterData ? setQueryParams(filterData) : {};
+  const schedulesToSkip = page && itemsPerPage ? +page * +itemsPerPage : 0;
+  const schedulesLimit = page && itemsPerPage ? +itemsPerPage : 0;
+
   try {
-    const data = await ScheduleModel
-      .find()
-      .sort({ createdAt: -1 })
+    const schedules = await ScheduleModel
+      .find(query)
       .populate([
         { 
           path: 'competition',
@@ -30,35 +36,14 @@ export const getSchedules: RequestHandler<unknown, unknown, unknown, GetAllSched
           ]
         }
       ])
+      .sort({ [sortIndicator]: order })
+      .skip(schedulesToSkip)
+      .limit(schedulesLimit)
       .exec();
-      
-    let response;
 
-    if(sortData) {
-      response = sortSchedules(data, sortData);
-    }
+    const schedulesCount = await ScheduleModel.countDocuments(query);
 
-    if(filterData) {
-      response = filterSchedules(data, filterData);
-    }
-
-    if(filterData && sortData) {
-      const filteredData = filterSchedules(data, filterData);
-      response = sortSchedules(filteredData, sortData);
-    }
-
-    if(!filterData && !sortData) {
-      response = data;
-    }
-
-    if(page && itemsPerPage) {
-      res.status(200).json({
-        schedules: response?.slice(+itemsPerPage * +page, +itemsPerPage * (+page + 1)),
-        schedulesCount: response ? response.length : data.length
-      }); 
-    } else {
-      res.status(200).json(data); 
-    }
+    res.status(200).json({ schedules, schedulesCount });
   } catch (error) {
     next(error);
   }
@@ -153,8 +138,6 @@ export const getRecentMatches: RequestHandler<unknown, unknown, unknown, GetRece
         }).games
       })));
 
-    console.log(schedules)
-
     res.status(200).json(schedules)
   } catch (error) {
     next(error);
@@ -230,7 +213,7 @@ export const updateSchedule: RequestHandler<unknown, unknown, UpdateScheduleBody
 };
 
 export const deleteSchedule: RequestHandler = async (req, res, next) => {
-  const { id, page, itemsPerPage } = req.query;
+  const { id } = req.query;
 
   try {
     if(!mongoose.isValidObjectId(id)) {
@@ -238,29 +221,7 @@ export const deleteSchedule: RequestHandler = async (req, res, next) => {
     }
 
     await ScheduleModel.findByIdAndDelete(id);
-
-    const data = await ScheduleModel
-      .find()
-      .sort({ createdAt: -1 })
-      .populate([
-        { 
-          path: 'competition',
-          populate: { path: 'clubs' }
-        },
-        {
-          path: 'fixture',
-          populate: [
-            { path: 'games.home.club' },
-            { path: 'games.away.club' }
-          ]
-        }
-      ])
-      .exec();
-
-    res.status(200).json({
-      schedules: data?.slice(+itemsPerPage! * +page!, +itemsPerPage! * (+page! + 1)),
-      schedulesCount: data.length
-    });
+    res.sendStatus(204);
   } catch (error) {
     next(error);
   }
